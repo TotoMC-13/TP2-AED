@@ -12,7 +12,7 @@ public class Estudiante {
     boolean _yaEntrego;
 
     public Estudiante(int cantRespuestas, int id, int fila, int columna, boolean esSospechoso, boolean yaEntrego) {
-        // Creamos la lista de len = cantRespuestas y la llenamos de 2
+        // Creamos la lista de len = cantRespuestas y la llenamos de 0
         // Que seria que no respondio
 
         _examen = new int[cantRespuestas];
@@ -30,21 +30,19 @@ public class Estudiante {
     }
 
     public int compareTo(Estudiante est) {
-        if (this._yaEntrego && est._yaEntrego) { // Si ambos entregaron
-            return this._id - est._id;
-        } else {
-            if (this._yaEntrego || est._yaEntrego) { // Si alguno entrego
-                if (this._yaEntrego) { // Si yo entregue, soy mayor
-                    return 1;
-                } else { // Si no, soy menor
-                    return 1;
-                }
-            } else if (this._puntaje != est._puntaje) { // Si son distintos los puntajes, puedo compararlos
-                return Double.compare(this._puntaje, est._puntaje);
-            }
+        // Si alguno entrego y el otro aun no
+        if (this._yaEntrego != est._yaEntrego) {
+            // El que no entrego es menor
+            // Para cuando lean esto, funciona asi: (condicion) ? (expresion si es true) : (expresion si es false)
+            return this._yaEntrego ? -1 : 1; 
         }
-
-        // Si todo falla, comparo ids
+        
+        // Si ambos tienen el mismo estado de entrega, comparamos con puntajes
+        if (this._puntaje != est._puntaje) {
+            return Double.compare(this._puntaje, est._puntaje);
+        }
+        
+        // Si empatan en puntaje, comparamos por ID
         return this._id - est._id;
     }
 

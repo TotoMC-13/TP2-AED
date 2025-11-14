@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import java.util.Arrays;
 
-class EstudianteTest {
+class EstudianteTests {
     @Test
     void menorNota() {
         // La nota default es 0
