@@ -11,8 +11,8 @@ class MinHeapTests {
 
     @Test
     void crear_heap_vacio() {
-        ArrayList<Estudiante> lista = new ArrayList<>();
-        MinHeap<Estudiante> heap = new MinHeap<>(lista);
+        ArrayList<Integer> lista = new ArrayList<>();
+        MinHeap<Integer> heap = new MinHeap<>(lista);
         assertNotNull(heap);
     }
 

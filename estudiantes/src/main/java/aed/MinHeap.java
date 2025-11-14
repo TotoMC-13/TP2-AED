@@ -65,9 +65,10 @@ public class MinHeap<T extends Comparable> {
 	}
 
 	private void bajar(Handle h) {
-		if (h.posicion == 0)
+		if (h.posicion == 0) {
 			return;
-
+		}
+		
 		Handle hijo1 = getHijos(h, 1);
 
 		if (hijo1.compareTo(h) < 0) {
