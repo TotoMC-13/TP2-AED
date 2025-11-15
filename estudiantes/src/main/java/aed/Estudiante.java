@@ -44,7 +44,7 @@ public class Estudiante implements Comparable<Estudiante>{
         }
         
         // Si empatan en puntaje, comparamos por ID
-        return this._id - est._id;
+        return Integer.compare(this._id, est._id);
     }
 
     public void setPuntaje(double puntaje) {
