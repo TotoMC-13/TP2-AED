@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class MinHeap<T extends Comparable> {
 	private ArrayList<Handle> elementos;
 
-	public MinHeap(ArrayList<T> objetos) {
+	public MinHeap(T[] objetos) {
 		elementos = new ArrayList<Handle>();
 
 		for (T o : objetos) {
