@@ -2,7 +2,7 @@ package aed;
 
 import java.util.ArrayList;
 
-// a.CompateTo(b) > 0 a mayor --  a.CompateTo(b) < 0 b menor
+// a.CompateTo(b) > 0 a mayor -- a.CompateTo(b) < 0 b menor
 public class MinHeap<T extends Comparable> {
 	private ArrayList<Handle> elementos;
 
@@ -42,10 +42,16 @@ public class MinHeap<T extends Comparable> {
 		}
 	}
 
-	private void cambiar_posicion_handle(Handle h, int posicion) {
-		elementos.add(posicion, h);
-		h.setPosicion(posicion);
+	private void add(T elemento) {
+		Handle h = new Handle(elemento, elementos.size());
+		elementos.add(h);
+		subir(h);
 	}
+
+	private void cambiar_posicion_handle(Handle h, int posicion) {
+		elementos.set(posicion, h);
+		h.setPosicion(posicion);
+	}		
 
 	private void intercambiar_handles(Handle h1, Handle h2) {
 		int p1 = h1.posicion;
@@ -64,44 +70,35 @@ public class MinHeap<T extends Comparable> {
 		return elementos.get(posicion_hijo);
 	}
 
-	private void bajar(Handle h) {
-		if (h.posicion == 0) {
-			return;
-		}
-		
-		Handle hijo1 = getHijos(h, 1);
+	private void bajar(Handle h) { // Esto se va a usar despues de borrar algo
+		int hijoIzquierdo = 2 * h.posicion + 1;
+		int hijoDerecho = 2 * h.posicion + 2;
+		int masChico = h.posicion;
 
-		if (hijo1.compareTo(h) < 0) {
-			intercambiar_handles(hijo1, h);
-			subir(h);
-			return;
+		if (hijoIzquierdo < elementos.size() && elementos.get(hijoIzquierdo).compareTo(elementos.get(masChico)) < 0) {
+			masChico = hijoIzquierdo;
 		}
 
-		Handle hijo2 = getHijos(h, 1);
+		if (hijoDerecho < elementos.size() && elementos.get(hijoDerecho).compareTo(elementos.get(masChico)) < 0) {
+			masChico = hijoDerecho;
+		}
 
-		if (hijo2.compareTo(h) < 0) {
-			intercambiar_handles(hijo2, h);
-			subir(h);
-			return;
+		if (masChico != h.posicion) {
+			intercambiar_handles(h, elementos.get(masChico));
+			bajar(h);
 		}
 	}
+	
+	private void subir(Handle h) { // Esto se usa despues de agregar algo
+		while (h.posicion > 0) {
+			Handle padre = getPadre(h);
 
-	private void subir(Handle h) {
-		if (h.posicion == 0)
-			return;
+			if (h.compareTo(padre) >= 0) { // Esto significa que ya esta en su lugar
+				break; 
+			}
 
-		Handle padre = getPadre(h);
-
-		if (padre.compareTo(h) > 0) {
-			intercambiar_handles(padre, h);
-			subir(h);
+			intercambiar_handles(h, padre);
 		}
-	}
-
-	private void add(T o) {
-		Handle h = new Handle(o, elementos.size());
-		elementos.add(h);
-		subir(h);
 	}
 
 	private void ordenar_handle(Handle h) {
