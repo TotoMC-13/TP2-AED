@@ -2,7 +2,7 @@ package aed;
 import java.util.ArrayList;
 
 public class Edr {
-    Estudiante[] _estudiantes;
+    Estudiante[] _estudiantes; // Esto tiene que ser una lista de Handles. ARREGLAR
     MinHeap<Estudiante> _puntajes;
     int[][] _aula;
     int[] _solucionCanonica;
@@ -36,7 +36,13 @@ public class Edr {
     public double[] notas(){
         //Devuelve una secuencia de las notas de todos los estudiantes ordenada por id.
         // O(E)
-        throw new UnsupportedOperationException("Sin implementar");
+        double[] res = new double[_estudiantes.length];
+
+        for (int i = 0; i < _estudiantes.length; i++) {
+            res[i] = _estudiantes[i]._puntaje;
+        }
+
+        return res;
     }
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
@@ -60,7 +66,18 @@ public class Edr {
     public void resolver(int estudiante, int NroEjercicio, int res) {
         //El/la estudiante resuelve un ejercicio
         // O(log E)
-        throw new UnsupportedOperationException("Sin implementar");
+        Estudiante e = _estudiantes[estudiante];
+        e._examen[NroEjercicio] = res;
+        int preguntasCorrectas = 0;
+
+        for (int i = 0; i < e._examen.length; i++) {
+            if (e._examen[i] == _solucionCanonica[i]) {
+                preguntasCorrectas ++;
+            }
+        }
+
+        e._puntaje = (preguntasCorrectas / _solucionCanonica.length) * 100;
+        // Falta cambiar el tema de los puntajes en el heap. 
     }
 
 
