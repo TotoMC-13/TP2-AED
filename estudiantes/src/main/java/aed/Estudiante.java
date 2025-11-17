@@ -1,6 +1,6 @@
 package aed;
 
-public class Estudiante {
+public class Estudiante implements Comparable<Estudiante>{
     int[] _examen; // Arreglo de tamaño R que almacena las respuestas (o -1 si está enblanco)
     double _puntaje; // El puntaje actual del estudiante
     // Es un puntero a la posición del estudiante en el _puntajes Min-Heap, permitiendo actualizaciones en O(log E).
@@ -29,12 +29,13 @@ public class Estudiante {
 
     }
 
+    @Override
     public int compareTo(Estudiante est) {
         // Si alguno entrego y el otro aun no
         if (this._yaEntrego != est._yaEntrego) {
             // El que no entrego es menor
             // Para cuando lean esto, funciona asi: (condicion) ? (expresion si es true) : (expresion si es false)
-            return this._yaEntrego ? -1 : 1; 
+            return this._yaEntrego ? 1 : -1; 
         }
         
         // Si ambos tienen el mismo estado de entrega, comparamos con puntajes
@@ -43,7 +44,7 @@ public class Estudiante {
         }
         
         // Si empatan en puntaje, comparamos por ID
-        return this._id - est._id;
+        return Integer.compare(this._id, est._id);
     }
 
     public void setPuntaje(double puntaje) {
