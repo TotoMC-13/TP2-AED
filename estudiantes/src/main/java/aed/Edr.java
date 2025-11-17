@@ -2,9 +2,33 @@ package aed;
 import java.util.ArrayList;
 
 public class Edr {
+    Estudiante[] _estudiantes;
+    MinHeap<Estudiante> _puntajes;
+    int[][] _aula;
+    int[] _solucionCanonica;
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
-        throw new UnsupportedOperationException("Sin implementar");
+        _estudiantes = new Estudiante[Cant_estudiantes];
+        _aula = new int[LadoAula][LadoAula];
+        _solucionCanonica = ExamenCanonico;
+        
+        int posFila = 0;
+        int posColumna = 0;
+        
+        for (int id = 0; id < Cant_estudiantes; id++) {
+            if (posFila > _aula.length) {
+                posFila = 0;
+                posColumna ++;
+            }
+            
+            Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
+            _aula[posFila][posColumna] = id;
+            _estudiantes[id] = e;
+            
+            posFila ++;
+        }
+        
+        _puntajes = new MinHeap<Estudiante>(_estudiantes);
     }
 
 //-------------------------------------------------NOTAS--------------------------------------------------------------------------
