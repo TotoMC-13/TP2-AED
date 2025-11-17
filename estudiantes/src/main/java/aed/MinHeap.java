@@ -65,11 +65,6 @@ public class MinHeap<T extends Comparable> {
 		return elementos.get(posicion_padre);
 	}
 
-	private Handle getHijos(Handle h, int numero_hijo) {
-		int posicion_hijo = 2 * h.posicion + numero_hijo;
-		return elementos.get(posicion_hijo);
-	}
-
 	private void bajar(Handle h) { // Esto se va a usar despues de borrar algo
 		int hijoIzquierdo = 2 * h.posicion + 1;
 		int hijoDerecho = 2 * h.posicion + 2;
