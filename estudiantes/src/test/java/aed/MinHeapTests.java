@@ -63,7 +63,7 @@ class MinHeapTests {
     @Test
     void desencolar_mantiene_orden() {
         Integer[] arr = {2,5,8,7,9,3};
-
+        
         MinHeap<Integer> heap = new MinHeap<>(arr);
         
         assertEquals(2, heap.desencolar().getElement());
@@ -74,5 +74,44 @@ class MinHeapTests {
         assertEquals(9, heap.desencolar().getElement());
     }
 
+    @Test
+    void desencolar_nada() {
+        Integer[] arr = {};
+        
+        MinHeap<Integer> heap = new MinHeap<>(arr);
+        
+        assertEquals(null, heap.desencolar());
+        
+    }
     
+    @Test
+    void desencolar_100_en_orden() {
+        Integer[] arr = new Integer[100];
+
+        for (int i = 0; i <100; i++) {
+            arr[i] = i;
+            
+            
+            
+        }
+        MinHeap<Integer> heap = new MinHeap<>(arr);
+            
+        for (int i = 0; i <100; i++) {
+            assertEquals(i, heap.desencolar().getElement());
+        }
+    }
+
+    @Test
+    void desencolar_100_al_reves() {
+        Integer[] arr = new Integer[101];
+
+        for (int i = 100; i >= 0; i--) {
+            arr[i] = i;           
+        }
+        MinHeap<Integer> heap = new MinHeap<>(arr);
+            
+        for (int i = 0; i <= 100; i++) {
+            assertEquals(i, heap.desencolar().getElement());
+        }
+    }
 }

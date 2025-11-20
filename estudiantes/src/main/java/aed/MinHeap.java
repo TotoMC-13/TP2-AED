@@ -17,7 +17,8 @@ public class MinHeap<T extends Comparable> {
 	public class Handle {
 		private T elemento;
 		private int posicion;
-
+		private boolean adentro_heap = true;
+		
 		Handle(T elemento, int posicion) {
 			this.elemento = elemento;
 			this.posicion = posicion;
@@ -38,7 +39,10 @@ public class MinHeap<T extends Comparable> {
 
 		public void setElemento(T elemento) {
 			this.elemento = elemento;
-			ordenar_handle(this);
+
+			if (!adentro_heap) {
+				ordenar_handle(this);
+			}
 		}
 	}
 
@@ -102,11 +106,17 @@ public class MinHeap<T extends Comparable> {
 	}
 
 	public Handle desencolar() {
+		if (elementos.size() == 0) {
+			return null;
+		}
+
 		Handle res = elementos.get(0);
 		Handle h2 = elementos.get(elementos.size() - 1);
 		intercambiar_handles(res, h2);
 		elementos.remove(elementos.size() - 1);
 		ordenar_handle(h2);
+
+		res.adentro_heap = false;
 		return res;
 	}
 }
