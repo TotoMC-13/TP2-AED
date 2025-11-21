@@ -639,4 +639,20 @@ class EdrTests {
         assertTrue(Arrays.equals(solucion_esperada, e._examen));
         
     }
+
+    @Test
+    void dos_copia(){
+        edr.resolver(0, 3, 3);
+        edr.resolver(0, 0, 2);
+        edr.resolver(1, 1, 1);
+        edr.resolver(2, 0, 0);
+        edr.resolver(3, 0, 0);
+        edr.copiarse(1);
+        edr.copiarse(1);
+
+        Estudiante e = edr._estudiantes[1];
+        int[] solucion_esperada = new int[]{2,1,-1,3,-1,-1,-1,-1,-1,-1};
+        assertTrue(Arrays.equals(solucion_esperada, e._examen));
+        
+    }
 }
