@@ -16,18 +16,18 @@ public class Edr {
         int posColumna = 0;
         
         for (int id = 1; id <= Cant_estudiantes; id++) {
-            if (posFila > _aula.length) {
-                posFila = 0;
-                posColumna ++;
+            if (posColumna > _aula.length) {
+                posColumna = 0;
+                posFila ++;
             }
             
-            Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
-            _aula[posColumna][posFila] = id;
+            Estudiante e = new Estudiante(_solucionCanonica.length, id, posColumna, posFila, false, false);
+            _aula[posFila][posColumna] = id;
             _estudiantes[id-1] = e;
             
-            posFila += 2;
+            posColumna += 2;
         }
-        
+
         _puntajes = new MinHeap<Estudiante>(_estudiantes);
     }
 
@@ -65,8 +65,7 @@ public class Edr {
                             break;
                         }
                     }
-                }
-                
+                }   
             }
         }
         
@@ -80,11 +79,27 @@ public class Edr {
         return primeras_respuestas_faltantes[res_idx];
     }
 
-    private Estudiante get_estudiante_aula(int columna, int fila) {
-        int id_estudiante = _aula[columna][fila];
+    private Estudiante get_estudiante_por_id(int id_estudiante) {
         return _estudiantes[id_estudiante - 1];
     }
     
+    private Estudiante get_estudiante_aula(int fila, int columna) {
+        int id_estudiante = _aula[fila][columna];
+        return get_estudiante_por_id(id_estudiante);
+    }
+    
+    private boolean la_posicion_es_valida(int fila, int columna) {
+        return (fila >= 0 && fila < _aula.length && columna >= 0 && columna < _aula.length);
+    }
+
+    private boolean la_posicion_esta_ocupada(int fila, int columna) {
+        return _aula[fila][columna] != 0;
+    }
+
+    private boolean hay_estudiante(int fila, int columna) {
+        return la_posicion_es_valida(fila, columna) && la_posicion_esta_ocupada(fila, columna);
+    }
+     
     public void copiarse(int estudiante) {
         // El/la estudiante se copia del vecino que mas respuestas
         // completadas tenga que el/ella no tenga; se copia solamente la
@@ -94,18 +109,18 @@ public class Edr {
         
         ArrayList<Estudiante> posibles_estudiantes_copiados = new ArrayList<Estudiante>();
         
-        if (e.getFila() + 2 < _aula.length && _aula[e.getColumna()][e.getFila() + 2] != 0) {
-            Estudiante ec = get_estudiante_aula(e.getColumna(),e.getFila() + 2);
+        if (hay_estudiante(e.getFila(), e.getColumna() + 2)) {
+            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() + 2);
             posibles_estudiantes_copiados.add(ec);
         }
 
-        if (e.getFila() - 2 >= 0 && _aula[e.getColumna()][e.getFila() - 2] != 0) {
-            Estudiante ec = get_estudiante_aula(e.getColumna(),e.getFila() - 2);
+        if (hay_estudiante(e.getFila(), e.getColumna() - 2)) {
+            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() - 2);
             posibles_estudiantes_copiados.add(ec);
         }
 
-        if (e.getColumna() - 1 >= 0 && _aula[e.getColumna() - 1][e.getFila()] != 0) {
-            Estudiante ec = get_estudiante_aula(e.getColumna() - 1,e.getFila());
+        if (hay_estudiante(e.getFila() - 1, e.getColumna())) {
+            Estudiante ec = get_estudiante_aula(e.getFila() - 1, e.getColumna());
             posibles_estudiantes_copiados.add(ec);
         }
 
