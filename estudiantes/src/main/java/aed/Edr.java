@@ -15,17 +15,17 @@ public class Edr {
         int posFila = 0;
         int posColumna = 0;
         
-        for (int id = 0; id < Cant_estudiantes; id++) {
+        for (int id = 1; id <= Cant_estudiantes; id++) {
             if (posFila > _aula.length) {
                 posFila = 0;
                 posColumna ++;
             }
             
             Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
-            _aula[posFila][posColumna] = id;
-            _estudiantes[id] = e;
+            _aula[posColumna][posFila] = id;
+            _estudiantes[id-1] = e;
             
-            posFila ++;
+            posFila += 2;
         }
         
         _puntajes = new MinHeap<Estudiante>(_estudiantes);
@@ -47,15 +47,73 @@ public class Edr {
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
+    private Integer[] respuesta_examen_cercano(Estudiante e, ArrayList<Estudiante> posibles_estudiantes_copiados) {
+        
+        int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.size()];
+        Integer[][] primeras_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.size()][2];
 
+        for (int pregunta = 0; pregunta < e._examen.length; pregunta++) {
+            for (int i = 0; i < posibles_estudiantes_copiados.size(); i++) {
+                if (e.getRespuesta(pregunta) == -1 && posibles_estudiantes_copiados.get(i).getRespuesta(pregunta) != -1){
+                    cantidad_de_respuestas_faltantes[i] += 1;
 
+                    if(cantidad_de_respuestas_faltantes[i] == 1){
+                        primeras_respuestas_faltantes[i][0] = pregunta;
+                        primeras_respuestas_faltantes[i][1] = posibles_estudiantes_copiados.get(i).getRespuesta(pregunta);
+                        
+                        if(posibles_estudiantes_copiados.size() == 1){
+                            break;
+                        }
+                    }
+                }
+                
+            }
+        }
+        
+        int res_idx = 0;
+        for (int i = 1; i < posibles_estudiantes_copiados.size(); i++){
+            if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
+                res_idx = i;                
+            }
+        }
+
+        return primeras_respuestas_faltantes[res_idx];
+    }
+
+    private Estudiante get_estudiante_aula(int columna, int fila) {
+        int id_estudiante = _aula[columna][fila];
+        return _estudiantes[id_estudiante - 1];
+    }
+    
     public void copiarse(int estudiante) {
         // El/la estudiante se copia del vecino que mas respuestas
         // completadas tenga que el/ella no tenga; se copia solamente la
         // primera de esas respuestas. Desempata por id menor.
         // O(R + log E)
-        throw new UnsupportedOperationException("Sin implementar");
-    }
+        Estudiante e = _estudiantes[estudiante];
+        
+        ArrayList<Estudiante> posibles_estudiantes_copiados = new ArrayList<Estudiante>();
+        
+        if (e.getFila() + 2 < _aula.length && _aula[e.getColumna()][e.getFila() + 2] != 0) {
+            Estudiante ec = get_estudiante_aula(e.getColumna(),e.getFila() + 2);
+            posibles_estudiantes_copiados.add(ec);
+        }
+
+        if (e.getFila() - 2 >= 0 && _aula[e.getColumna()][e.getFila() - 2] != 0) {
+            Estudiante ec = get_estudiante_aula(e.getColumna(),e.getFila() - 2);
+            posibles_estudiantes_copiados.add(ec);
+        }
+
+        if (e.getColumna() - 1 >= 0 && _aula[e.getColumna() - 1][e.getFila()] != 0) {
+            Estudiante ec = get_estudiante_aula(e.getColumna() - 1,e.getFila());
+            posibles_estudiantes_copiados.add(ec);
+        }
+
+        Integer[] pregunta_respuesta = respuesta_examen_cercano(e, posibles_estudiantes_copiados);
+
+        e.setExamen(pregunta_respuesta[0], pregunta_respuesta[1]);
+
+    }   
 
 
 //-----------------------------------------------RESOLVER----------------------------------------------------------------
