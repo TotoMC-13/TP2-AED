@@ -1,12 +1,9 @@
 package aed;
 
-import aed.MinHeap.Handle;
-
 public class Estudiante implements Comparable<Estudiante>{
     int[] _examen; // Arreglo de tamaño R que almacena las respuestas (o -1 si está enblanco)
     double _puntaje; // El puntaje actual del estudiante
-    // Es un puntero a la posición del estudiante en el _puntajes Min-Heap, permitiendo actualizaciones en O(log E).
-    // HeapHandle _posicionEnHeap;
+   
     int _correctas; // Agregado para O(1) en resolver
     int _id;
     int _fila;

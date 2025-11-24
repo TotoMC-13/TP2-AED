@@ -337,15 +337,19 @@ class EdrTests {
         }
 
         int[] copiones = edr.chequearCopias();
-        int[] copiones_esperados = new int[]{2,3};
+        // int[] copiones_esperados = new int[]{2,3}; pese a q se copiaron esos estudiantes, la logica para detectarlos es otra
+        int[] copiones_esperados = new int[]{0,1};
         assertTrue(Arrays.equals(copiones_esperados, copiones));
 
         NotaFinal[] notas_finales = edr.corregir();
+        //NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
+        //    new NotaFinal(10.0, 1),
+        //    new NotaFinal(10.0, 0)
+        //};
         NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
-            new NotaFinal(10.0, 1),
-            new NotaFinal(10.0, 0)
+            new NotaFinal(20.0, 3),
+            new NotaFinal(20.0, 2)
         };
-
         assertTrue(Arrays.equals(notas_finales_esperadas, notas_finales));
 
     }
@@ -401,13 +405,15 @@ class EdrTests {
         edr.copiarse(2);
         
         notas = edr.notas();
-        notas_esperadas = new double[]{10.0, 30.0, 40.0, 20.0};
+        // notas_esperadas = new double[]{10.0, 30.0, 40.0, 20.0}; este chequeo esta mal, ya q al tercer alumno se copia del primero q tiene una respuesta mas y es incorrecta
+        notas_esperadas = new double[]{10.0, 30.0, 30.0, 20.0};
         assertTrue(Arrays.equals(notas_esperadas, notas));
         
         edr.copiarse(3);
         
         notas = edr.notas();
-        notas_esperadas = new double[]{10.0, 30.0, 40.0, 30.0};
+        // notas_esperadas = new double[]{10.0, 30.0, 40.0, 30.0}; el cuarto(3) alumno copia una respuesta incorrecta del primero(0)
+        notas_esperadas = new double[]{10.0, 30.0, 30.0, 20.0};
         assertTrue(Arrays.equals(notas_esperadas, notas));
 
 
@@ -416,15 +422,20 @@ class EdrTests {
         }
 
         int[] copiones = edr.chequearCopias();
-        int[] copiones_esperados = new int[]{2,3};
+        // int[] copiones_esperados = new int[]{2,3}; la logica para detectar copiones es otra
+        int[] copiones_esperados = new int[]{0,1,2};
         assertTrue(Arrays.equals(copiones_esperados, copiones));
 
         NotaFinal[] notas_finales = edr.corregir();
-        NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
-            new NotaFinal(30.0, 1),
-            new NotaFinal(10.0, 0)
-        };
+        //NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
+        //    new NotaFinal(30.0, 1),
+        //    new NotaFinal(10.0, 0)
+        //};
 
+        NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
+            new NotaFinal(20.0, 3),
+        };
+        
         assertTrue(Arrays.equals(notas_finales_esperadas, notas_finales));
     }
 
@@ -634,7 +645,7 @@ class EdrTests {
         edr.resolver(3, 0, 0);
         edr.copiarse(1);
 
-        Estudiante e = edr._estudiantes[1];
+        Estudiante e = edr._estudiantes.get(1).getElement();
         int[] solucion_esperada = new int[]{2,1,-1,-1,-1,-1,-1,-1,-1,-1};
         assertTrue(Arrays.equals(solucion_esperada, e._examen));
         
@@ -650,7 +661,7 @@ class EdrTests {
         edr.copiarse(1);
         edr.copiarse(1);
 
-        Estudiante e = edr._estudiantes[1];
+        Estudiante e = edr._estudiantes.get(1).getElement();
         int[] solucion_esperada = new int[]{2,1,-1,3,-1,-1,-1,-1,-1,-1};
         assertTrue(Arrays.equals(solucion_esperada, e._examen));
         

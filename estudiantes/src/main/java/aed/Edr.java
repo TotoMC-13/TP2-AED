@@ -2,7 +2,7 @@ package aed;
 import java.util.ArrayList;
 
 public class Edr {
-    MinHeap.Handle[] _estudiantes; // Esto tiene que ser una lista de Handles. ARREGLAR
+    ArrayList<MinHeap<Estudiante>.Handle> _estudiantes; 
     MinHeap<Estudiante> _puntajes;
     int[][] _aula;
     int[] _solucionCanonica;
@@ -10,7 +10,8 @@ public class Edr {
     int _cantEntregados;
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
-        Estudiante[] estudiantes = new Estudiante[Cant_estudiantes];
+      
+        _estudiantes = new ArrayList<MinHeap<Estudiante>.Handle>();
         _aula = new int[LadoAula][LadoAula];
         _solucionCanonica = ExamenCanonico;
         _puntajes = new MinHeap<Estudiante>();
@@ -19,6 +20,9 @@ public class Edr {
 
         int posFila = 0;
         int posColumna = 0;
+
+        _puntajes = new MinHeap<Estudiante>();
+
         
         for (int id = 1; id <= Cant_estudiantes; id++) {
             if (posColumna >= _aula.length) {
@@ -28,14 +32,17 @@ public class Edr {
             
             Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
             _aula[posFila][posColumna] = id;
-            estudiantes[id-1] = e;
-
-            MinHeap<Estudiante>.Handle h = _puntajes.push(e);
+           
+            _estudiantes.add( _puntajes.push(e)) ;
             
             posColumna += 2;
         }
 
-        _puntajes = new MinHeap<Estudiante>(estudiantes);
+
+    }
+
+    private double calcular_puntaje(int correctas) {
+        return Math.floor((double)correctas * 100.0 / _solucionCanonica.length);
     }
 
 //-------------------------------------------------NOTAS--------------------------------------------------------------------------
@@ -43,10 +50,10 @@ public class Edr {
     public double[] notas(){
         //Devuelve una secuencia de las notas de todos los estudiantes ordenada por id.
         // O(E)
-        double[] res = new double[_estudiantes.length];
+        double[] res = new double[_estudiantes.size()];
 
-        for (int i = 0; i < _estudiantes.length; i++) {
-            res[i] = _estudiantes[i]._puntaje;
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            res[i] = _estudiantes.get(i).getElement()._puntaje;
         }
 
         return res;
@@ -54,40 +61,50 @@ public class Edr {
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
-    private Integer[] respuesta_examen_cercano(Estudiante e, ArrayList<Estudiante> posibles_estudiantes_copiados) {
+    private Integer[] obtener_respuesta_de_otro_estudiante(Estudiante e, ArrayList<Estudiante> posibles_estudiantes_copiados) {
         
-        int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.size()];
-        Integer[][] primeras_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.size()][2];
+        if (posibles_estudiantes_copiados.size() > 0) {
+         
+            int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.size()];
+            Integer[][] primeras_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.size()][2];
 
-        for (int pregunta = 0; pregunta < e._examen.length; pregunta++) {
-            for (int i = 0; i < posibles_estudiantes_copiados.size(); i++) {
-                if (e.getRespuesta(pregunta) == -1 && posibles_estudiantes_copiados.get(i).getRespuesta(pregunta) != -1){
-                    cantidad_de_respuestas_faltantes[i] += 1;
+            for (int pregunta = 0; pregunta < e._examen.length; pregunta++) {
+                for (int i = 0; i < posibles_estudiantes_copiados.size(); i++) {
+                    if (e.getRespuesta(pregunta) == -1 && posibles_estudiantes_copiados.get(i).getRespuesta(pregunta) != -1){
+                        cantidad_de_respuestas_faltantes[i] += 1;
 
-                    if(cantidad_de_respuestas_faltantes[i] == 1){
-                        primeras_respuestas_faltantes[i][0] = pregunta;
-                        primeras_respuestas_faltantes[i][1] = posibles_estudiantes_copiados.get(i).getRespuesta(pregunta);
-                        
-                        if(posibles_estudiantes_copiados.size() == 1){
-                            break;
+                        if(cantidad_de_respuestas_faltantes[i] == 1){
+                            primeras_respuestas_faltantes[i][0] = pregunta;
+                            primeras_respuestas_faltantes[i][1] = posibles_estudiantes_copiados.get(i).getRespuesta(pregunta);
                         }
-                    }
-                }   
+                    }   
+                }
             }
-        }
         
-        int res_idx = 0;
-        for (int i = 1; i < posibles_estudiantes_copiados.size(); i++){
-            if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
-                res_idx = i;                
+            boolean todos_cero = true;
+            for (int cantidad : cantidad_de_respuestas_faltantes){
+                if (cantidad > 0){
+                    todos_cero = false;
+                }
+            }
+            if (!todos_cero){
+        
+            
+                int res_idx = 0;
+                for (int i = 1; i < posibles_estudiantes_copiados.size(); i++){
+                    if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
+                        res_idx = i;                
+                    }
+                }
+
+                return primeras_respuestas_faltantes[res_idx];
             }
         }
-
-        return primeras_respuestas_faltantes[res_idx];
+        return null;
     }
 
     private Estudiante get_estudiante_por_id(int id_estudiante) {
-        return _estudiantes[id_estudiante - 1];
+        return _estudiantes.get(id_estudiante - 1).getElement();
     }
     
     private Estudiante get_estudiante_aula(int fila, int columna) {
@@ -112,29 +129,38 @@ public class Edr {
         // completadas tenga que el/ella no tenga; se copia solamente la
         // primera de esas respuestas. Desempata por id menor.
         // O(R + log E)
-        Estudiante e = _estudiantes[estudiante];
+        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
+        Estudiante e = h.getElement();
         
         ArrayList<Estudiante> posibles_estudiantes_copiados = new ArrayList<Estudiante>();
         
-        if (hay_estudiante(e.getFila(), e.getColumna() + 2)) {
+        if (hay_estudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
             Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() + 2);
             posibles_estudiantes_copiados.add(ec);
         }
 
-        if (hay_estudiante(e.getFila(), e.getColumna() - 2)) {
+        if (hay_estudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
             Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() - 2);
             posibles_estudiantes_copiados.add(ec);
         }
 
-        if (hay_estudiante(e.getFila() - 1, e.getColumna())) {
+        if (hay_estudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
             Estudiante ec = get_estudiante_aula(e.getFila() - 1, e.getColumna());
             posibles_estudiantes_copiados.add(ec);
         }
 
-        Integer[] pregunta_respuesta = respuesta_examen_cercano(e, posibles_estudiantes_copiados);
-
-        e.setExamen(pregunta_respuesta[0], pregunta_respuesta[1]);
-
+        Integer[] pregunta_y_respuesta = obtener_respuesta_de_otro_estudiante(e, posibles_estudiantes_copiados);
+        
+        if (pregunta_y_respuesta != null) {
+            if (_solucionCanonica[pregunta_y_respuesta[0]] == pregunta_y_respuesta[1]) {
+                e._correctas += 1;
+            }
+            e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
+            e.setPuntaje(calcular_puntaje(e._correctas));
+            h.setElemento(e);
+        }
+            
+        
     }   
 
 
@@ -146,13 +172,15 @@ public class Edr {
     public void resolver(int estudiante, int NroEjercicio, int res) {
         //El/la estudiante resuelve un ejercicio
         // O(log E)
-
-        Estudiante e = _estudiantes[estudiante];
+        
+        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
+        Estudiante e = _estudiantes.get(estudiante).getElement();
 
         // Si ya entrego no hace nada
         if (e._yaEntrego) return;
+
         int respuestaAnterior = e.getRespuesta(NroEjercicio);
-        e._examen[NroEjercicio] = res;
+        
         int respuestaCorrecta = _solucionCanonica[NroEjercicio];
       
         // Actualizo respuesta en O(1)
@@ -171,11 +199,11 @@ public class Edr {
         
         
         // Recalculo el puntaje y lo guardo en O(1)
-        double nuevoPuntaje = Math.floor((double)e._correctas * 100.0 / _solucionCanonica.length); 
+        double nuevoPuntaje = calcular_puntaje(e._correctas); 
         e.setPuntaje(nuevoPuntaje);
 
         // Aca actualizo el Heap, en O(log E)
-        e.getHandle().setElemento(e); 
+        h.setElemento(e); 
     }
 
 
@@ -199,17 +227,8 @@ public class Edr {
             // Al sacar del heap, obtenemos el menor.
             // Como los que entregaron tienen _yaEntrego=true, son mayores así que están al fondo
             MinHeap<Estudiante>.Handle h = _puntajes.desencolar();
-            if (h == null) break;
 
             Estudiante e = h.getElement();
-            
-            // Si nos encontramos con alguien que ya entregó, significa que se acabaron los estudiantes activos en el heap (porque están ordenados).
-                        if (e._yaEntrego) {
-                // Lo volvemos a meter porque no lo procesamos 
-                // Aunque técnicamente ya salio 
-                // break porque no hay más activos.
-                break; 
-            }
             
             for (int j = 0; j < _solucionCanonica.length; j++) {
                 e.setExamen(j, examenDW[j]);
@@ -222,7 +241,7 @@ public class Edr {
                 }
             }
             e._correctas = correctas;
-            e._puntaje = Math.floor((double)e._correctas * 100.0 / _solucionCanonica.length);
+            e.setPuntaje(calcular_puntaje(e._correctas));
             
             estudiantesParaReinsertar.add(e);
             kProcesados++;
@@ -230,7 +249,7 @@ public class Edr {
 
         for (Estudiante e : estudiantesParaReinsertar) {
             MinHeap<Estudiante>.Handle nuevoHandle = _puntajes.push(e);
-            e.setHandle(nuevoHandle);
+            _estudiantes.set(e._id - 1, nuevoHandle);
         }
     }
 
@@ -244,25 +263,25 @@ public class Edr {
         _yaEntregaron[estudiante] = true;
         _cantEntregados++; 
         
-        Estudiante e = _estudiantes[estudiante];
-        
+        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
+        Estudiante e = h.getElement();
         e._yaEntrego = true; 
 
         // Actualizo el Heap 
         // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
         // No modificamos su puntaje, así notas() sigue funcionando.
-        e.getHandle().setElemento(e);
+        h.setElemento(e);
     }
 
    
 //-----------------------------------------------------CORREGIR---------------------------------------------------------
 
-    public NotaFinal[] corregir() {
+    public NotaFinal[] corregir() {//TODO: hacer con el heap
         ArrayList<NotaFinal> notasParaOrdenar = new ArrayList<>();
         
-        for (int i = 0; i < _estudiantes.length; i++) {
-            if (_yaEntregaron[i] && !_estudiantes[i]._esSospechoso) {
-                notasParaOrdenar.add(new NotaFinal(_estudiantes[i]._puntaje, i));
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            if (_yaEntregaron[i] && !_estudiantes.get(i).getElement()._esSospechoso) {
+                notasParaOrdenar.add(new NotaFinal(_estudiantes.get(i).getElement()._puntaje, i));
             }
         }
         
@@ -276,9 +295,10 @@ public class Edr {
         if (_cantEntregados == 0) return new int[0];
 
         int maxOpcion = -1;
-        for (int i = 0; i < _estudiantes.length; i++) {
-            if (!_yaEntregaron[i]) continue;
-            for (int rta : _estudiantes[i]._examen) {
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            Estudiante e = _estudiantes.get(i).getElement();
+            if (!e._yaEntrego) continue;
+            for (int rta : e._examen) {
                 if (rta > maxOpcion) maxOpcion = rta;
             }
         }
@@ -286,11 +306,12 @@ public class Edr {
 
         int[][] conteoRespuestas = new int[_solucionCanonica.length][cantOpciones];
         
-        for (int i = 0; i < _estudiantes.length; i++) {
-            if (!_yaEntregaron[i]) continue; 
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            Estudiante e = _estudiantes.get(i).getElement();
+            if (!e._yaEntrego) continue;
 
             for (int preg = 0; preg < _solucionCanonica.length; preg++) {
-                int rta = _estudiantes[i].getRespuesta(preg);
+                int rta = e.getRespuesta(preg);
                 if (rta != -1) {
                     conteoRespuestas[preg][rta]++;
                 }
@@ -300,14 +321,17 @@ public class Edr {
         double umbral = (double)(_cantEntregados - 1) * 0.25;
         ArrayList<Integer> copiones = new ArrayList<>();
 
-        for (int id = 0; id < _estudiantes.length; id++) {
-            if (!_yaEntregaron[id]) continue; 
+        for (int id = 0; id < _estudiantes.size(); id++) {
+            MinHeap<Estudiante>.Handle h = _estudiantes.get(id);
+            Estudiante e = h.getElement();
+
+            if (!e._yaEntrego) continue; 
             
             boolean esSosp = true;      
             boolean respondioAlgo = false; 
             
             for (int preg = 0; preg < _solucionCanonica.length; preg++) {
-                int rta = _estudiantes[id].getRespuesta(preg);
+                int rta = e.getRespuesta(preg);
                 if (rta != -1) { 
                     respondioAlgo = true;
                     int coincidenciasExternas = conteoRespuestas[preg][rta] - 1; 
@@ -321,10 +345,11 @@ public class Edr {
             
             if (esSosp && respondioAlgo) {
                 copiones.add(id);
-                _estudiantes[id]._esSospechoso = true;
+                e._esSospechoso = true;
             } else {
-                _estudiantes[id]._esSospechoso = false;
+                e._esSospechoso = false;
             }
+            h.setElemento(e);
         }
         
         int[] resultado = new int[copiones.size()];
