@@ -29,6 +29,9 @@ public class Estudiante implements Comparable<Estudiante>{
 
     }
 
+    public int getFila(){return _fila;}
+    public int getColumna(){return _columna;}
+
     @Override
     public int compareTo(Estudiante est) {
         // Si alguno entrego y el otro aun no
@@ -45,6 +48,14 @@ public class Estudiante implements Comparable<Estudiante>{
         
         // Si empatan en puntaje, comparamos por ID
         return Integer.compare(this._id, est._id);
+    }
+    public void setExamen(int pregunta, int respuesta) {
+        _examen[pregunta] = respuesta; 
+    }
+
+
+    public int getRespuesta(int pregunta) {
+        return _examen[pregunta]; 
     }
 
     public void setPuntaje(double puntaje) {
