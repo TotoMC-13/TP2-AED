@@ -6,13 +6,22 @@ import java.util.ArrayList;
 public class MinHeap<T extends Comparable> {
 	private ArrayList<Handle> elementos;
 
+	// Constructor vacío  para poder insertar manualmente desde Edr
+    public MinHeap() {
+        elementos = new ArrayList<Handle>();
+    }
+
 	public MinHeap(T[] objetos) {
 		elementos = new ArrayList<Handle>();
 
 		for (T o : objetos) {
-			add(o);
+			push(o);
 		}
 	}
+
+	public boolean estaVacio() {
+        return elementos.isEmpty();
+    }
 
 	public class Handle {
 		private T elemento;
@@ -42,10 +51,12 @@ public class MinHeap<T extends Comparable> {
 		}
 	}
 
-	private void add(T elemento) {
+	// Renombrado de add a push y hecho público para devolver el Handle
+	public Handle push(T elemento) {
 		Handle h = new Handle(elemento, elementos.size());
 		elementos.add(h);
 		subir(h);
+        return h;
 	}
 
 	private void cambiar_posicion_handle(Handle h, int posicion) {
