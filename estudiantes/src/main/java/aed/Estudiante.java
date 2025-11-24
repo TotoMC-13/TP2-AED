@@ -8,7 +8,6 @@ public class Estudiante implements Comparable<Estudiante>{
     // Es un puntero a la posición del estudiante en el _puntajes Min-Heap, permitiendo actualizaciones en O(log E).
     // HeapHandle _posicionEnHeap;
     int _correctas; // Agregado para O(1) en resolver
-    Handle _handle; // Agregado para O(log E) en resolver
     int _id;
     int _fila;
     int _columna;
@@ -35,10 +34,6 @@ public class Estudiante implements Comparable<Estudiante>{
 
     public int getFila(){return _fila;}
     public int getColumna(){return _columna;}
-
-    // Set y Get necesarios para la interactuar con Edr
-    public void setHandle(Handle h) { _handle = h; }
-    public Handle getHandle() { return _handle; }
 
     @Override
     public int compareTo(Estudiante est) {

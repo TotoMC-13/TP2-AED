@@ -2,7 +2,7 @@ package aed;
 import java.util.ArrayList;
 
 public class Edr {
-    Estudiante[] _estudiantes; // Esto tiene que ser una lista de Handles. ARREGLAR
+    MinHeap.Handle[] _estudiantes; // Esto tiene que ser una lista de Handles. ARREGLAR
     MinHeap<Estudiante> _puntajes;
     int[][] _aula;
     int[] _solucionCanonica;
@@ -10,7 +10,7 @@ public class Edr {
     int _cantEntregados;
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
-        _estudiantes = new Estudiante[Cant_estudiantes];
+        Estudiante[] estudiantes = new Estudiante[Cant_estudiantes];
         _aula = new int[LadoAula][LadoAula];
         _solucionCanonica = ExamenCanonico;
         _puntajes = new MinHeap<Estudiante>();
@@ -28,15 +28,14 @@ public class Edr {
             
             Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
             _aula[posFila][posColumna] = id;
-            _estudiantes[id-1] = e;
+            estudiantes[id-1] = e;
 
             MinHeap<Estudiante>.Handle h = _puntajes.push(e);
-            e.setHandle(h);
             
             posColumna += 2;
         }
 
-        _puntajes = new MinHeap<Estudiante>(_estudiantes);
+        _puntajes = new MinHeap<Estudiante>(estudiantes);
     }
 
 //-------------------------------------------------NOTAS--------------------------------------------------------------------------
