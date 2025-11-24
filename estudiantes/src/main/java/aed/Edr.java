@@ -6,24 +6,32 @@ public class Edr {
     MinHeap<Estudiante> _puntajes;
     int[][] _aula;
     int[] _solucionCanonica;
+    boolean[] _yaEntregaron; 
+    int _cantEntregados;
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
         _estudiantes = new Estudiante[Cant_estudiantes];
         _aula = new int[LadoAula][LadoAula];
         _solucionCanonica = ExamenCanonico;
-        
+        _puntajes = new MinHeap<Estudiante>();
+        _yaEntregaron = new boolean[Cant_estudiantes]; 
+        _cantEntregados = 0;
+
         int posFila = 0;
         int posColumna = 0;
         
         for (int id = 1; id <= Cant_estudiantes; id++) {
-            if (posColumna > _aula.length) {
+            if (posColumna >= _aula.length) {
                 posColumna = 0;
                 posFila ++;
             }
             
-            Estudiante e = new Estudiante(_solucionCanonica.length, id, posColumna, posFila, false, false);
+            Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
             _aula[posFila][posColumna] = id;
             _estudiantes[id-1] = e;
+
+            MinHeap<Estudiante>.Handle h = _puntajes.push(e);
+            e.setHandle(h);
             
             posColumna += 2;
         }
@@ -139,18 +147,36 @@ public class Edr {
     public void resolver(int estudiante, int NroEjercicio, int res) {
         //El/la estudiante resuelve un ejercicio
         // O(log E)
+
         Estudiante e = _estudiantes[estudiante];
+
+        // Si ya entrego no hace nada
+        if (e._yaEntrego) return;
+        int respuestaAnterior = e.getRespuesta(NroEjercicio);
         e._examen[NroEjercicio] = res;
-        int preguntasCorrectas = 0;
+        int respuestaCorrecta = _solucionCanonica[NroEjercicio];
+      
+        // Actualizo respuesta en O(1)
+        e.setExamen(NroEjercicio, res);
 
-        for (int i = 0; i < e._examen.length; i++) {
-            if (e._examen[i] == _solucionCanonica[i]) {
-                preguntasCorrectas ++;
-            }
+        // Actualizo cantidad de correctas en O(1) 
+        // (Si estaba bien + ahora mal -> resta)
+        // (Si estaba mal/no contestada + ahora bien -> suma
+        boolean estabaCorrecta = (respuestaAnterior == respuestaCorrecta);
+        boolean esCorrecta = (res == respuestaCorrecta);        
+        if (!estabaCorrecta && esCorrecta) {
+            e._correctas++;
+        } else if (estabaCorrecta && !esCorrecta) {
+            e._correctas--;
         }
+        
+        
+        // Recalculo el puntaje y lo guardo en O(1)
+        double nuevoPuntaje = Math.floor((double)e._correctas * 100.0 / _solucionCanonica.length); 
+        e.setPuntaje(nuevoPuntaje);
 
-        e._puntaje = (preguntasCorrectas / _solucionCanonica.length) * 100;
-        // Falta cambiar el tema de los puntajes en el heap. 
+        // Aca actualizo el Heap, en O(log E)
+        e.getHandle().setElemento(e); 
     }
 
 
@@ -166,36 +192,146 @@ public class Edr {
         // IMPORTANTE: Solo extraer y procesar, no reinsertar los que ya entregaron
         // Si ya entregó, simplemente no lo reinsertamos
         // (queda fuera del heap permanentemente)
-        throw new UnsupportedOperationException("Sin implementar");
+
+        ArrayList<Estudiante> estudiantesParaReinsertar = new ArrayList<>();
+        int kProcesados = 0;
+        
+        while (kProcesados < n && !_puntajes.estaVacio()) {
+            // Al sacar del heap, obtenemos el menor.
+            // Como los que entregaron tienen _yaEntrego=true, son mayores así que están al fondo
+            MinHeap<Estudiante>.Handle h = _puntajes.desencolar();
+            if (h == null) break;
+
+            Estudiante e = h.getElement();
+            
+            // Si nos encontramos con alguien que ya entregó, significa que se acabaron los estudiantes activos en el heap (porque están ordenados).
+                        if (e._yaEntrego) {
+                // Lo volvemos a meter porque no lo procesamos 
+                // Aunque técnicamente ya salio 
+                // break porque no hay más activos.
+                break; 
+            }
+            
+            for (int j = 0; j < _solucionCanonica.length; j++) {
+                e.setExamen(j, examenDW[j]);
+            }
+            
+            int correctas = 0;
+            for (int j = 0; j < _solucionCanonica.length; j++) {
+                if (e.getRespuesta(j) == _solucionCanonica[j]) {
+                    correctas++;
+                }
+            }
+            e._correctas = correctas;
+            e._puntaje = Math.floor((double)e._correctas * 100.0 / _solucionCanonica.length);
+            
+            estudiantesParaReinsertar.add(e);
+            kProcesados++;
+        }
+
+        for (Estudiante e : estudiantesParaReinsertar) {
+            MinHeap<Estudiante>.Handle nuevoHandle = _puntajes.push(e);
+            e.setHandle(nuevoHandle);
+        }
     }
+
  
 
 //-------------------------------------------------ENTREGAR-------------------------------------------------------------
 
     public void entregar(int estudiante) {
-        // El/la estudiante entrega su examen
-        // O(log E) según enunciado actualizado
-        // Extraer del heap para que no sea considerado en consultarDarkWeb
-        // (alternativa: mantener en heap y filtrar en consultarDarkWeb)
-        throw new UnsupportedOperationException("Sin implementar");
+        if (_yaEntregaron[estudiante]) return;
+
+        _yaEntregaron[estudiante] = true;
+        _cantEntregados++; 
+        
+        Estudiante e = _estudiantes[estudiante];
+        
+        e._yaEntrego = true; 
+
+        // Actualizo el Heap 
+        // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
+        // No modificamos su puntaje, así notas() sigue funcionando.
+        e.getHandle().setElemento(e);
     }
 
+   
 //-----------------------------------------------------CORREGIR---------------------------------------------------------
 
     public NotaFinal[] corregir() {
-        // Devuelve las notas de los examenes de los estudiantes 
-        // que no se hayan copiado ordenada por NotaFinal.nota de forma
-        // decreciente. En caso de empate, se desempata 
-        // por mayor NotaFinal.id de estudiante
-        throw new UnsupportedOperationException("Sin implementar");
+        ArrayList<NotaFinal> notasParaOrdenar = new ArrayList<>();
+        
+        for (int i = 0; i < _estudiantes.length; i++) {
+            if (_yaEntregaron[i] && !_estudiantes[i]._esSospechoso) {
+                notasParaOrdenar.add(new NotaFinal(_estudiantes[i]._puntaje, i));
+            }
+        }
+        
+        notasParaOrdenar.sort(null); 
+        return notasParaOrdenar.toArray(new NotaFinal[0]);
     }
 
 //-------------------------------------------------------CHEQUEAR COPIAS-------------------------------------------------
 
     public int[] chequearCopias() {
-        // Devuelve la lista de los estudiantes
-        // sospechosos de haberse copiado ordenada por id de estudiante.
-        // Encontrar el valor máximo de respuesta para dimensionar el array
-        throw new UnsupportedOperationException("Sin implementar");
+        if (_cantEntregados == 0) return new int[0];
+
+        int maxOpcion = -1;
+        for (int i = 0; i < _estudiantes.length; i++) {
+            if (!_yaEntregaron[i]) continue;
+            for (int rta : _estudiantes[i]._examen) {
+                if (rta > maxOpcion) maxOpcion = rta;
+            }
+        }
+        int cantOpciones = (maxOpcion == -1) ? 1 : maxOpcion + 1; 
+
+        int[][] conteoRespuestas = new int[_solucionCanonica.length][cantOpciones];
+        
+        for (int i = 0; i < _estudiantes.length; i++) {
+            if (!_yaEntregaron[i]) continue; 
+
+            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+                int rta = _estudiantes[i].getRespuesta(preg);
+                if (rta != -1) {
+                    conteoRespuestas[preg][rta]++;
+                }
+            }
+        }
+
+        double umbral = (double)(_cantEntregados - 1) * 0.25;
+        ArrayList<Integer> copiones = new ArrayList<>();
+
+        for (int id = 0; id < _estudiantes.length; id++) {
+            if (!_yaEntregaron[id]) continue; 
+            
+            boolean esSosp = true;      
+            boolean respondioAlgo = false; 
+            
+            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+                int rta = _estudiantes[id].getRespuesta(preg);
+                if (rta != -1) { 
+                    respondioAlgo = true;
+                    int coincidenciasExternas = conteoRespuestas[preg][rta] - 1; 
+
+                    if (coincidenciasExternas < umbral) {
+                        esSosp = false; 
+                        break;
+                    }
+                }
+            }
+            
+            if (esSosp && respondioAlgo) {
+                copiones.add(id);
+                _estudiantes[id]._esSospechoso = true;
+            } else {
+                _estudiantes[id]._esSospechoso = false;
+            }
+        }
+        
+        int[] resultado = new int[copiones.size()];
+        for(int i=0; i < copiones.size(); i++) {
+            resultado[i] = copiones.get(i);
+        }
+        return resultado;
     }
 }
