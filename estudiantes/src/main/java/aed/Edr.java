@@ -21,7 +21,7 @@ public class Edr {
                 posFila ++;
             }
             
-            Estudiante e = new Estudiante(_solucionCanonica.length, id, posColumna, posFila, false, false);
+            Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
             _aula[posFila][posColumna] = id;
             _estudiantes[id-1] = e;
             
