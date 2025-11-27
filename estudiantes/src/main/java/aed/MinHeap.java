@@ -138,4 +138,8 @@ public class MinHeap<T extends Comparable> {
 		res.adentro_heap = false;
 		return res;
 	}
+
+	public ArrayList<Handle> getHandles() {
+		return elementos;
+	}
 }

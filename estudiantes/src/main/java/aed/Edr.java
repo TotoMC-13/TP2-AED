@@ -4,40 +4,54 @@ import java.util.ArrayList;
 public class Edr {
     ArrayList<MinHeap<Estudiante>.Handle> _estudiantes; 
     MinHeap<Estudiante> _puntajes;
-    int[][] _aula;
     int[] _solucionCanonica;
     boolean[] _yaEntregaron; 
     int _cantEntregados;
+    int _ladoAula;
+    int _cantEstudiantes;
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
       
+        _ladoAula = LadoAula;
+        _cantEstudiantes = Cant_estudiantes;
         _estudiantes = new ArrayList<MinHeap<Estudiante>.Handle>();
-        _aula = new int[LadoAula][LadoAula];
-        _solucionCanonica = ExamenCanonico;
+        _solucionCanonica = ExamenCanonico.clone();
         _puntajes = new MinHeap<Estudiante>();
         _yaEntregaron = new boolean[Cant_estudiantes]; 
         _cantEntregados = 0;
-
-        int posFila = 0;
-        int posColumna = 0;
-
-        _puntajes = new MinHeap<Estudiante>();
-
         
-        for (int id = 1; id <= Cant_estudiantes; id++) {
-            if (posColumna >= _aula.length) {
-                posColumna = 0;
-                posFila ++;
-            }
+        // Creamos un array temporal para los estudiantes
+        Estudiante[] tempEstudiantes = new Estudiante[_cantEstudiantes];
+
+        // Es importante notar que los estudiantes terminan sentados en pos pares
+        // Ej: LadoAula = 4, se sientan en 0 y 2
+        int estudiantesPorFila = (_ladoAula + 1) / 2;
+
+        for (int i = 0; i < _cantEstudiantes; i++) {
+            int id = i + 1;
+
+            // Calculamos la posicion con su id
+            // Capaz es mas facil ver esto en una tabla si no se entiende: https://imagebin.ca/v/93Urkwzo9cI0
+            int fila = i / estudiantesPorFila;
+            int col = (i % estudiantesPorFila) * 2;
+
+            Estudiante e = new Estudiante(_solucionCanonica.length, id, fila, col, false, false);
+            tempEstudiantes[i] = e;
             
-            Estudiante e = new Estudiante(_solucionCanonica.length, id, posFila, posColumna, false, false);
-            _aula[posFila][posColumna] = id;
-           
-            _estudiantes.add( _puntajes.push(e)) ;
-            
-            posColumna += 2;
+            // Esto es para despues poder usar set
+            _estudiantes.add(null);
         }
 
+        // Armamos el heap en O(E) con Heapify (esta en nuestro constructor)
+        _puntajes = new MinHeap<>(tempEstudiantes);
+
+        // Recuperamos las handles y las asignamos
+        ArrayList<MinHeap<Estudiante>.Handle> handles = _puntajes.getHandles();
+
+        for (MinHeap<Estudiante>.Handle h : handles) {
+            int id = h.getElement().getId();
+            _estudiantes.set(id - 1, h);
+        }
 
     }
 
@@ -362,7 +376,7 @@ public class Edr {
             } else {
                 e.setEsSospechoso(false);
             }
-            h.setElemento(e);
+            // h.setElemento(e); Como esSospechoso no cambia el orden, podemos no actualizar el heap
         }
         
         int[] resultado = new int[copiones.size()];
