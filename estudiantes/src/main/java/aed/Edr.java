@@ -277,17 +277,29 @@ public class Edr {
    
 //-----------------------------------------------------CORREGIR---------------------------------------------------------
 
-    public NotaFinal[] corregir() { //TODO: hacer con el heap
-        ArrayList<NotaFinal> notasParaOrdenar = new ArrayList<>();
-        
+    public NotaFinal[] corregir() {
+        // Heap Auxiliar para ordenar las cosas
+        MinHeap<NotaFinal> heapNotas = new MinHeap<>();
+        int cantidadAprobados = 0;
+
         for (int i = 0; i < _estudiantes.size(); i++) {
-            if (_yaEntregaron[i] && !_estudiantes.get(i).getElement().getEsSospechoso()) {
-                notasParaOrdenar.add(new NotaFinal(_estudiantes.get(i).getElement().getPuntaje(), i));
+            Estudiante e = _estudiantes.get(i).getElement();
+
+            // Si entrego y NO es sospechoso, lo metemos en el heap
+            if (e.getYaEntrego() && !e.getEsSospechoso()) {
+                heapNotas.push(new NotaFinal(e.getPuntaje(), i));
+                cantidadAprobados++;
             }
         }
-        
-        notasParaOrdenar.sort(null); 
-        return notasParaOrdenar.toArray(new NotaFinal[0]);
+
+        // Los sacamos del heap, salen en orden asi que los metemos en el array
+        NotaFinal[] resultado = new NotaFinal[cantidadAprobados];
+
+        for (int i = 0; i < cantidadAprobados; i++) {
+            resultado[i] = heapNotas.desencolar().getElement();
+        }
+
+        return resultado;
     }
 
 //-------------------------------------------------------CHEQUEAR COPIAS-------------------------------------------------
