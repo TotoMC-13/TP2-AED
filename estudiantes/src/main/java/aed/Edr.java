@@ -116,26 +116,32 @@ public class Edr {
         }
         return null;
     }
-
-    private Estudiante get_estudiante_por_id(int id_estudiante) {
-        return _estudiantes.get(id_estudiante - 1).getElement();
-    }
     
     private Estudiante get_estudiante_aula(int fila, int columna) {
-        int id_estudiante = _aula[fila][columna];
-        return get_estudiante_por_id(id_estudiante);
-    }
-    
-    private boolean la_posicion_es_valida(int fila, int columna) {
-        return (fila >= 0 && fila < _aula.length && columna >= 0 && columna < _aula.length);
-    }
+        // Chequeamos que no sea invalido
+        if (fila < 0 || fila >= _ladoAula || columna < 0 || columna >= _ladoAula) {
+            return null;
+        }
 
-    private boolean la_posicion_esta_ocupada(int fila, int columna) {
-        return _aula[fila][columna] != 0;
+        // Si la columna es impar no hay nadie aca por como armamos el salon, retornamos null
+        if (columna % 2 != 0) {
+            return null;
+        }
+        
+        int estudiantesPorFila = (_ladoAula + 1) / 2;
+
+        // Calculamos el indice del estudiante
+        int indice = (fila * estudiantesPorFila) + (columna / 2);
+
+        if (indice >= _cantEstudiantes) {
+            return null;
+        }
+
+        return _estudiantes.get(indice).getElement();
     }
 
     private boolean hay_estudiante(int fila, int columna) {
-        return la_posicion_es_valida(fila, columna) && la_posicion_esta_ocupada(fila, columna);
+        return get_estudiante_aula(fila, columna) != null;
     }
      
     public void copiarse(int estudiante) {
