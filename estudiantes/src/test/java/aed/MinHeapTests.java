@@ -57,7 +57,7 @@ class MinHeapTests {
         MinHeap<Estudiante>.Handle h = heap.desencolar();
         
         assertEquals(e2, h.getElement());
-        assertEquals(10.0, h.getElement()._puntaje);
+        assertEquals(10.0, h.getElement().getPuntaje());
     }
 
     @Test

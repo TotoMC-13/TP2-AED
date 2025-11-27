@@ -53,7 +53,7 @@ public class Edr {
         double[] res = new double[_estudiantes.size()];
 
         for (int i = 0; i < _estudiantes.size(); i++) {
-            res[i] = _estudiantes.get(i).getElement()._puntaje;
+            res[i] = _estudiantes.get(i).getElement().getPuntaje();
         }
 
         return res;
@@ -68,7 +68,7 @@ public class Edr {
             int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.size()];
             Integer[][] primeras_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.size()][2];
 
-            for (int pregunta = 0; pregunta < e._examen.length; pregunta++) {
+            for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) {
                 for (int i = 0; i < posibles_estudiantes_copiados.size(); i++) {
                     if (e.getRespuesta(pregunta) == -1 && posibles_estudiantes_copiados.get(i).getRespuesta(pregunta) != -1){
                         cantidad_de_respuestas_faltantes[i] += 1;
@@ -153,10 +153,10 @@ public class Edr {
         
         if (pregunta_y_respuesta != null) {
             if (_solucionCanonica[pregunta_y_respuesta[0]] == pregunta_y_respuesta[1]) {
-                e._correctas += 1;
+                e.setCorrectas(e.getCorrectas() + 1);
             }
             e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
-            e.setPuntaje(calcular_puntaje(e._correctas));
+            e.setPuntaje(calcular_puntaje(e.getCorrectas()));
             h.setElemento(e);
         }
             
@@ -177,7 +177,7 @@ public class Edr {
         Estudiante e = _estudiantes.get(estudiante).getElement();
 
         // Si ya entrego no hace nada
-        if (e._yaEntrego) return;
+        if (e.getYaEntrego()) return;
 
         int respuestaAnterior = e.getRespuesta(NroEjercicio);
         
@@ -190,16 +190,17 @@ public class Edr {
         // (Si estaba bien + ahora mal -> resta)
         // (Si estaba mal/no contestada + ahora bien -> suma
         boolean estabaCorrecta = (respuestaAnterior == respuestaCorrecta);
-        boolean esCorrecta = (res == respuestaCorrecta);        
+        boolean esCorrecta = (res == respuestaCorrecta);
+
         if (!estabaCorrecta && esCorrecta) {
-            e._correctas++;
+            e.setCorrectas(e.getCorrectas() + 1);
         } else if (estabaCorrecta && !esCorrecta) {
-            e._correctas--;
+            e.setCorrectas(e.getCorrectas() - 1);
         }
         
         
         // Recalculo el puntaje y lo guardo en O(1)
-        double nuevoPuntaje = calcular_puntaje(e._correctas); 
+        double nuevoPuntaje = calcular_puntaje(e.getCorrectas()); 
         e.setPuntaje(nuevoPuntaje);
 
         // Aca actualizo el Heap, en O(log E)
@@ -240,8 +241,8 @@ public class Edr {
                     correctas++;
                 }
             }
-            e._correctas = correctas;
-            e.setPuntaje(calcular_puntaje(e._correctas));
+            e.setCorrectas(correctas);
+            e.setPuntaje(calcular_puntaje(e.getCorrectas()));
             
             estudiantesParaReinsertar.add(e);
             kProcesados++;
@@ -249,7 +250,7 @@ public class Edr {
 
         for (Estudiante e : estudiantesParaReinsertar) {
             MinHeap<Estudiante>.Handle nuevoHandle = _puntajes.push(e);
-            _estudiantes.set(e._id - 1, nuevoHandle);
+            _estudiantes.set(e.getId() - 1, nuevoHandle);
         }
     }
 
@@ -265,7 +266,7 @@ public class Edr {
         
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
         Estudiante e = h.getElement();
-        e._yaEntrego = true; 
+        e.setYaEntrego(true); 
 
         // Actualizo el Heap 
         // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
@@ -276,12 +277,12 @@ public class Edr {
    
 //-----------------------------------------------------CORREGIR---------------------------------------------------------
 
-    public NotaFinal[] corregir() {//TODO: hacer con el heap
+    public NotaFinal[] corregir() { //TODO: hacer con el heap
         ArrayList<NotaFinal> notasParaOrdenar = new ArrayList<>();
         
         for (int i = 0; i < _estudiantes.size(); i++) {
-            if (_yaEntregaron[i] && !_estudiantes.get(i).getElement()._esSospechoso) {
-                notasParaOrdenar.add(new NotaFinal(_estudiantes.get(i).getElement()._puntaje, i));
+            if (_yaEntregaron[i] && !_estudiantes.get(i).getElement().getEsSospechoso()) {
+                notasParaOrdenar.add(new NotaFinal(_estudiantes.get(i).getElement().getPuntaje(), i));
             }
         }
         
@@ -297,8 +298,8 @@ public class Edr {
         int maxOpcion = -1;
         for (int i = 0; i < _estudiantes.size(); i++) {
             Estudiante e = _estudiantes.get(i).getElement();
-            if (!e._yaEntrego) continue;
-            for (int rta : e._examen) {
+            if (!e.getYaEntrego()) continue;
+            for (int rta : e.getExamen()) {
                 if (rta > maxOpcion) maxOpcion = rta;
             }
         }
@@ -308,7 +309,7 @@ public class Edr {
         
         for (int i = 0; i < _estudiantes.size(); i++) {
             Estudiante e = _estudiantes.get(i).getElement();
-            if (!e._yaEntrego) continue;
+            if (!e.getYaEntrego()) continue;
 
             for (int preg = 0; preg < _solucionCanonica.length; preg++) {
                 int rta = e.getRespuesta(preg);
@@ -325,7 +326,7 @@ public class Edr {
             MinHeap<Estudiante>.Handle h = _estudiantes.get(id);
             Estudiante e = h.getElement();
 
-            if (!e._yaEntrego) continue; 
+            if (!e.getYaEntrego()) continue; 
             
             boolean esSosp = true;      
             boolean respondioAlgo = false; 
@@ -345,9 +346,9 @@ public class Edr {
             
             if (esSosp && respondioAlgo) {
                 copiones.add(id);
-                e._esSospechoso = true;
+                e.setEsSospechoso(true);
             } else {
-                e._esSospechoso = false;
+                e.setEsSospechoso(false);
             }
             h.setElemento(e);
         }
