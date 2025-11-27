@@ -48,6 +48,7 @@ public class Edr {
         // Recuperamos las handles y las asignamos
         ArrayList<MinHeap<Estudiante>.Handle> handles = _puntajes.getHandles();
 
+        // Asignamos cada handle en su lugar correspondiente
         for (MinHeap<Estudiante>.Handle h : handles) {
             int id = h.getElement().getId();
             _estudiantes.set(id - 1, h);
