@@ -1,15 +1,15 @@
 package aed;
 
 public class Estudiante implements Comparable<Estudiante>{
-    int[] _examen; // Arreglo de tamaño R que almacena las respuestas (o -1 si está enblanco)
-    double _puntaje; // El puntaje actual del estudiante
+    private int[] _examen; // Arreglo de tamaño R que almacena las respuestas (o -1 si está enblanco)
+    private double _puntaje; // El puntaje actual del estudiante
    
-    int _correctas; // Agregado para O(1) en resolver
-    int _id;
-    int _fila;
-    int _columna;
-    boolean _esSospechoso;
-    boolean _yaEntrego;
+    private int _correctas; // Agregado para O(1) en resolver
+    private int _id;
+    private int _fila;
+    private int _columna;
+    private boolean _esSospechoso;
+    private boolean _yaEntrego;
 
     public Estudiante(int cantRespuestas, int id, int fila, int columna, boolean esSospechoso, boolean yaEntrego) {
         // Creamos la lista de len = cantRespuestas y la llenamos de -1
@@ -29,9 +29,7 @@ public class Estudiante implements Comparable<Estudiante>{
 
     }
 
-    public int getFila(){return _fila;}
-    public int getColumna(){return _columna;}
-
+    
     @Override
     public int compareTo(Estudiante est) {
         // Si alguno entrego y el otro todavia no
@@ -49,16 +47,65 @@ public class Estudiante implements Comparable<Estudiante>{
         // Si empatan en puntaje, comparamos por ID
         return Integer.compare(this._id, est._id);
     }
-    public void setExamen(int pregunta, int respuesta) {
-        _examen[pregunta] = respuesta; 
-    }
-
-
+    
+    // Getters
+    
     public int getRespuesta(int pregunta) {
         return _examen[pregunta]; 
     }
+    
+    public int[] getExamen() {
+        return _examen;
+    }
+    
+    public double getPuntaje() {
+        return _puntaje;
+    }
+    
+    public int getCorrectas() {
+        return _correctas;
+    }
+    
+    public int getId() {
+        return _id;
+    }
 
+    public int getFila(){
+        return _fila;
+    }
+
+    public int getColumna(){
+        return _columna;
+    }
+
+    public boolean getEsSospechoso() {
+        return _esSospechoso;
+    }
+
+    public boolean getYaEntrego() {
+        return _yaEntrego;
+    }
+    
+    // Setters
+
+    public void setExamen(int pregunta, int respuesta) {
+        _examen[pregunta] = respuesta; 
+    }
+    
     public void setPuntaje(double puntaje) {
         _puntaje = puntaje;
     }
+
+    public void setCorrectas(int correctas) {
+        _correctas = correctas;
+    }
+
+    public void setEsSospechoso(boolean esSospechoso) {
+        _esSospechoso = esSospechoso;
+    }
+    
+    public void setYaEntrego(boolean yaEntrego) {
+        _yaEntrego = yaEntrego;
+    }
+
 }

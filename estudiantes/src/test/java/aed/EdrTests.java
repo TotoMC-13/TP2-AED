@@ -647,7 +647,7 @@ class EdrTests {
 
         Estudiante e = edr._estudiantes.get(1).getElement();
         int[] solucion_esperada = new int[]{2,1,-1,-1,-1,-1,-1,-1,-1,-1};
-        assertTrue(Arrays.equals(solucion_esperada, e._examen));
+        assertTrue(Arrays.equals(solucion_esperada, e.getExamen()));
         
     }
 
@@ -663,7 +663,7 @@ class EdrTests {
 
         Estudiante e = edr._estudiantes.get(1).getElement();
         int[] solucion_esperada = new int[]{2,1,-1,3,-1,-1,-1,-1,-1,-1};
-        assertTrue(Arrays.equals(solucion_esperada, e._examen));
+        assertTrue(Arrays.equals(solucion_esperada, e.getExamen()));
         
     }
 }
