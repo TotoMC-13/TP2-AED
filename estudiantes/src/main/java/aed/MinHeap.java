@@ -6,16 +6,24 @@ import java.util.ArrayList;
 public class MinHeap<T extends Comparable> {
 	private ArrayList<Handle> elementos;
 
-	// Constructor vacío  para poder insertar manualmente desde Edr
+	// Constructor vacío 	para poder insertar manualmente desde Edr
     public MinHeap() {
         elementos = new ArrayList<Handle>();
     }
 
+	// Complejidad O(n)
 	public MinHeap(T[] objetos) {
 		elementos = new ArrayList<Handle>();
 
-		for (T o : objetos) {
-			push(o);
+		// Primero agrego todos asi nomas a elementos
+		for (int i = 0; i < objetos.length; i++) {
+			Handle h = new Handle(objetos[i], i);
+			elementos.add(h);
+		}
+
+		// Empezamos desde el ultimo nodo con hijos y vamos subiendo hasta la raiz
+		for (int i = (elementos.size() / 2) - 1; i >= 0; i--) {
+			bajar(elementos.get(i));
 		}
 	}
 
