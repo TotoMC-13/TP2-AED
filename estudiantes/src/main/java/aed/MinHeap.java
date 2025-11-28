@@ -21,7 +21,9 @@ public class MinHeap<T extends Comparable> {
 			elementos.add(h);
 		}
 
+		// Algoritmo de Floyd
 		// Empezamos desde el ultimo nodo con hijos y vamos subiendo hasta la raiz
+		// O(n)
 		for (int i = (elementos.size() / 2) - 1; i >= 0; i--) {
 			bajar(elementos.get(i));
 		}
@@ -54,7 +56,7 @@ public class MinHeap<T extends Comparable> {
 			this.posicion = posicion;
 		}
 
-		public void setElemento(T elemento) {
+		public void setElemento(T elemento) { // AUXIOIo cambiar erstudiante desde el heap (?
 			this.elemento = elemento;
 
 			if (adentro_heap) {

@@ -5,29 +5,25 @@ public class Edr {
     ArrayList<MinHeap<Estudiante>.Handle> _estudiantes; 
     MinHeap<Estudiante> _puntajes;
     int[] _solucionCanonica;
-    boolean[] _yaEntregaron; 
     int _cantEntregados;
     int _ladoAula;
-    int _cantEstudiantes;
+    
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
       
         _ladoAula = LadoAula;
-        _cantEstudiantes = Cant_estudiantes;
         _estudiantes = new ArrayList<MinHeap<Estudiante>.Handle>();
         _solucionCanonica = ExamenCanonico.clone();
         _puntajes = new MinHeap<Estudiante>();
-        _yaEntregaron = new boolean[Cant_estudiantes]; 
-        _cantEntregados = 0;
         
         // Creamos un array temporal para los estudiantes
-        Estudiante[] tempEstudiantes = new Estudiante[_cantEstudiantes];
+        Estudiante[] tempEstudiantes = new Estudiante[Cant_estudiantes];
 
         // Es importante notar que los estudiantes terminan sentados en pos pares
         // Ej: LadoAula = 4, se sientan en 0 y 2
         int estudiantesPorFila = (_ladoAula + 1) / 2;
 
-        for (int i = 0; i < _cantEstudiantes; i++) {
+        for (int i = 0; i < Cant_estudiantes; i++) {
             int id = i + 1;
 
             // Calculamos la posicion con su id
@@ -56,6 +52,9 @@ public class Edr {
 
     }
 
+    private int cant_estudiantes(){
+        return _estudiantes.size();
+    }
     private double calcular_puntaje(int correctas) {
         return Math.floor((double)correctas * 100.0 / _solucionCanonica.length);
     }
@@ -134,7 +133,7 @@ public class Edr {
         // Calculamos el indice del estudiante
         int indice = (fila * estudiantesPorFila) + (columna / 2);
 
-        if (indice >= _cantEstudiantes) {
+        if (indice >= cant_estudiantes()) {
             return null;
         }
 
@@ -262,6 +261,7 @@ public class Edr {
                     correctas++;
                 }
             }
+
             e.setCorrectas(correctas);
             e.setPuntaje(calcular_puntaje(e.getCorrectas()));
             
@@ -280,15 +280,12 @@ public class Edr {
 //-------------------------------------------------ENTREGAR-------------------------------------------------------------
 
     public void entregar(int estudiante) {
-        if (_yaEntregaron[estudiante]) return;
-
-        _yaEntregaron[estudiante] = true;
-        _cantEntregados++; 
-        
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
-        Estudiante e = h.getElement();
-        e.setYaEntrego(true); 
 
+        Estudiante e = h.getElement();
+        if (e.getYaEntrego()) return;
+
+        e.setYaEntrego(true);
         // Actualizo el Heap 
         // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
         // No modificamos su puntaje, así notas() sigue funcionando.
@@ -316,6 +313,7 @@ public class Edr {
         // Los sacamos del heap, salen en orden asi que los metemos en el array
         NotaFinal[] resultado = new NotaFinal[cantidadAprobados];
 
+        // Los insertamos en el orden correcto
         for (int i = 0; i < cantidadAprobados; i++) {
             resultado[i] = heapNotas.desencolar().getElement();
         }
@@ -326,7 +324,6 @@ public class Edr {
 //-------------------------------------------------------CHEQUEAR COPIAS-------------------------------------------------
 
     public int[] chequearCopias() {
-        if (_cantEntregados == 0) return new int[0];
 
         int maxOpcion = -1;
         for (int i = 0; i < _estudiantes.size(); i++) {
@@ -352,14 +349,13 @@ public class Edr {
             }
         }
 
-        double umbral = (double)(_cantEntregados - 1) * 0.25;
+        double umbral = (double)(cant_estudiantes() - 1) * 0.25;
         ArrayList<Integer> copiones = new ArrayList<>();
 
         for (int id = 0; id < _estudiantes.size(); id++) {
             MinHeap<Estudiante>.Handle h = _estudiantes.get(id);
             Estudiante e = h.getElement();
 
-            if (!e.getYaEntrego()) continue; 
             
             boolean esSosp = true;      
             boolean respondioAlgo = false; 

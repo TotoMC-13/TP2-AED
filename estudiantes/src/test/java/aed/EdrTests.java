@@ -23,6 +23,20 @@ class EdrTests {
     }
 
     @Test
+    void comparar_notas() {
+        NotaFinal notas = new NotaFinal(10.0, 1);
+        NotaFinal notas_esperadas = new NotaFinal(11.0, 1);
+        assertTrue(notas_esperadas.compareTo(notas) < 0);
+    }
+
+    @Test
+    void comparar_notas_iguales_distinto_id() {
+        NotaFinal notas = new NotaFinal(10.0, 2);
+        NotaFinal notas_esperadas = new NotaFinal(10.0, 1);
+        assertTrue(notas_esperadas.compareTo(notas) > 0);
+    }
+
+    @Test
     void nuevo_edr() {
         double[] notas = edr.notas();
         double[] notas_esperadas = new double[]{0.0, 0.0, 0.0, 0.0};
