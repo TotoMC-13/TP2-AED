@@ -10,7 +10,7 @@ public class NotaFinal implements Comparable<NotaFinal> {
     }
 
     public int compareTo(NotaFinal otra){
-        int notaComparison = Double.compare(otra._nota, this._nota);
+        int notaComparison = Double.compare(this._nota, otra._nota);
 
         // Comparar por nota (decreceinte)
         if (notaComparison != 0) {
@@ -18,7 +18,7 @@ public class NotaFinal implements Comparable<NotaFinal> {
         }
 
         // Si las notas son iguales, comparar por ID (decreceinte)
-        return Integer.compare(otra._id, this._id);
+        return Integer.compare(this._id, otra._id);
     }
 
     @Override

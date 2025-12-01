@@ -304,7 +304,7 @@ public class Edr {
             Estudiante e = _estudiantes.get(i).getElement();
 
             // Si entrego y NO es sospechoso, lo metemos en el heap
-            if (e.getYaEntrego() && !e.getEsSospechoso()) {
+            if (!e.getEsSospechoso()) {
                 heapNotas.push(new NotaFinal(e.getPuntaje(), i));
                 cantidadAprobados++;
             }
@@ -314,7 +314,7 @@ public class Edr {
         NotaFinal[] resultado = new NotaFinal[cantidadAprobados];
 
         // Los insertamos en el orden correcto
-        for (int i = 0; i < cantidadAprobados; i++) {
+        for (int i = cantidadAprobados-1; i >=0 ; i--) {
             resultado[i] = heapNotas.desencolar().getElement();
         }
 
@@ -328,7 +328,7 @@ public class Edr {
         int maxOpcion = -1;
         for (int i = 0; i < _estudiantes.size(); i++) {
             Estudiante e = _estudiantes.get(i).getElement();
-            if (!e.getYaEntrego()) continue;
+
             for (int rta : e.getExamen()) {
                 if (rta > maxOpcion) maxOpcion = rta;
             }
@@ -339,8 +339,8 @@ public class Edr {
         
         for (int i = 0; i < _estudiantes.size(); i++) {
             Estudiante e = _estudiantes.get(i).getElement();
-            if (!e.getYaEntrego()) continue;
 
+            
             for (int preg = 0; preg < _solucionCanonica.length; preg++) {
                 int rta = e.getRespuesta(preg);
                 if (rta != -1) {
@@ -366,7 +366,7 @@ public class Edr {
                     respondioAlgo = true;
                     int coincidenciasExternas = conteoRespuestas[preg][rta] - 1; 
 
-                    if (coincidenciasExternas < umbral) {
+                    if (coincidenciasExternas < umbral || umbral == 0) {
                         esSosp = false; 
                         break;
                     }

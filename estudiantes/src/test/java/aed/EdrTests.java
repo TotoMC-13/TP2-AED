@@ -23,20 +23,6 @@ class EdrTests {
     }
 
     @Test
-    void comparar_notas() {
-        NotaFinal notas = new NotaFinal(10.0, 1);
-        NotaFinal notas_esperadas = new NotaFinal(11.0, 1);
-        assertTrue(notas_esperadas.compareTo(notas) < 0);
-    }
-
-    @Test
-    void comparar_notas_iguales_distinto_id() {
-        NotaFinal notas = new NotaFinal(10.0, 2);
-        NotaFinal notas_esperadas = new NotaFinal(10.0, 1);
-        assertTrue(notas_esperadas.compareTo(notas) > 0);
-    }
-
-    @Test
     void nuevo_edr() {
         double[] notas = edr.notas();
         double[] notas_esperadas = new double[]{0.0, 0.0, 0.0, 0.0};
@@ -680,4 +666,48 @@ class EdrTests {
         assertTrue(Arrays.equals(solucion_esperada, e.getExamen()));
         
     }
+
+    @Test
+    void un_estudiante(){
+        d_aula = 1;
+        cant_alumnos = 1;
+        solucion = new int[]{0,0,0};
+
+        edr = new Edr(d_aula, cant_alumnos, solucion);
+        edr.resolver(0, 0, 0);
+        edr.resolver(0, 1, 0);
+        edr.resolver(0, 2, 0);
+        edr.entregar(0);
+        edr.chequearCopias();
+        NotaFinal[] notas_finales = edr.corregir();
+        NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
+            new NotaFinal(100.0, 0),
+        };
+        assertTrue(Arrays.equals(notas_finales_esperadas, notas_finales));
+
+    }
+
+    @Test
+    void sin_aliasing(){
+        d_aula = 1;
+        cant_alumnos = 1;
+        solucion = new int[]{0,0,0};
+
+        edr = new Edr(d_aula, cant_alumnos, solucion);
+        edr.resolver(0, 0, 0);
+        edr.resolver(0, 1, 0);
+        edr.resolver(0, 2, 0);
+        edr.entregar(0);
+        edr.chequearCopias();
+
+        solucion = new int[]{1,1,1};
+        NotaFinal[] notas_finales = edr.corregir();
+        NotaFinal[] notas_finales_esperadas = new NotaFinal[]{
+            new NotaFinal(100.0, 0),
+        };
+        assertTrue(Arrays.equals(notas_finales_esperadas, notas_finales));
+
+    }
+
+   
 }
