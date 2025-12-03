@@ -55,14 +55,6 @@ public class MinHeap<T extends Comparable> {
 		private void setPosicion(int posicion) {
 			this.posicion = posicion;
 		}
-
-		public void setElemento(T elemento) { // AUXIOIo cambiar erstudiante desde el heap (?
-			this.elemento = elemento;
-
-			if (adentro_heap) {
-				ordenar_handle(this);
-			}
-		}
 	}
 
 	// Renombrado de add a push y hecho público para devolver el Handle
@@ -121,7 +113,7 @@ public class MinHeap<T extends Comparable> {
 		}
 	}
 
-	private void ordenar_handle(Handle h) {
+	public void ordenar_handle(Handle h) {
 		subir(h);
 		bajar(h);
 	}

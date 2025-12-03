@@ -177,7 +177,7 @@ public class Edr {
             }
             e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
             e.setPuntaje(calcular_puntaje(e.getCorrectas()));
-            h.setElemento(e);
+            _puntajes.ordenar_handle(h);
         }
             
         
@@ -224,7 +224,7 @@ public class Edr {
         e.setPuntaje(nuevoPuntaje);
 
         // Aca actualizo el Heap, en O(log E)
-        h.setElemento(e); 
+        _puntajes.ordenar_handle(h); 
     }
 
 
@@ -289,7 +289,7 @@ public class Edr {
         // Actualizo el Heap 
         // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
         // No modificamos su puntaje, así notas() sigue funcionando.
-        h.setElemento(e);
+        _puntajes.ordenar_handle(h);
     }
 
    
@@ -379,7 +379,7 @@ public class Edr {
             } else {
                 e.setEsSospechoso(false);
             }
-            // h.setElemento(e); Como esSospechoso no cambia el orden, podemos no actualizar el heap
+            // _puntajes.ordenar_handle(h); Como esSospecoso no cambia el orden, podemos no actualizar el heap
         }
         
         int[] resultado = new int[copiones.size()];
