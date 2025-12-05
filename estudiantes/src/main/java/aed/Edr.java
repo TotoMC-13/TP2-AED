@@ -351,7 +351,8 @@ public class Edr {
 
         // Hacemos una matriz con columnas = preguntas y filas = respuesta
         // En cada lugar va la cantidad de personas que contestaron esa opcion en esa pregunta
-        int[][] conteoRespuestas = generarFrecuenciasa(maxOpcion);
+        // Sumamos 1 para no salirnos del indice
+        int[][] conteoRespuestas = generarFrecuencias(maxOpcion + 1);
 
         // Definimos el umbral para definir si es sospechoso o no
         double umbral = (double)(cant_estudiantes() - 1) * 0.25;
@@ -366,7 +367,7 @@ public class Edr {
             // Si es sospechoso, lo agegamos a la lista de copiones y lo seteamos en su atributo
             if (esSospechoso(e, conteoRespuestas, umbral)) {
                 copiones.add(id);
-                e.setSospechoso(true);
+                e.setEsSospechoso(true);
             } else {
                 e.setEsSospechoso(false);
             }
