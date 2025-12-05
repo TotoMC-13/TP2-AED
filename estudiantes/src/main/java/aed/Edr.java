@@ -75,48 +75,67 @@ public class Edr {
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
-    private Integer[] obtener_respuesta_de_otro_estudiante(Estudiante e, ArrayList<Estudiante> posibles_estudiantes_copiados) {
+    private void sumar_pregunta_faltante(int pregunta, Estudiante e, Estudiante[] posibles_estudiantes_copiados, int[] cantidad_de_respuestas_faltantes,Integer[][] primeras_preguntas_y_respuestas_faltantes){
+        for (int i = 0; i < posibles_estudiantes_copiados.length; i++) {
+
+            Estudiante posible_estudiante_copiado = posibles_estudiantes_copiados[i];
+            if (e.getRespuesta(pregunta) == -1 && posible_estudiante_copiado != null && posible_estudiante_copiado.getRespuesta(pregunta) != -1){
+                cantidad_de_respuestas_faltantes[i] += 1;
+
+                if(cantidad_de_respuestas_faltantes[i] == 1){
+                    primeras_preguntas_y_respuestas_faltantes[i][0] = pregunta;
+                    primeras_preguntas_y_respuestas_faltantes[i][1] = posible_estudiante_copiado.getRespuesta(pregunta);
+                }
+            }   
+        }
+    }
+    
+    private boolean hay_alguna_respuesta_faltante(int[] cantidad_de_respuestas_faltantes){
+       
+        for (int cantidad : cantidad_de_respuestas_faltantes){
+            if (cantidad > 0){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int indice_del_estudiante_con_mas_respuestas_faltantes(int[] cantidad_de_respuestas_faltantes){
+        int res_idx = 0;
+
+        for (int i = 1; i < cantidad_de_respuestas_faltantes.length; i++){
+            if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
+                res_idx = i;                
+            }
+        }
+
+        return res_idx;
+    }
+
+    private Integer[] obtener_respuesta_de_otro_estudiante(Estudiante e, Estudiante[] posibles_estudiantes_copiados) {
         
-        if (posibles_estudiantes_copiados.size() > 0) {
+        if (posibles_estudiantes_copiados.length > 0) {
          
-            int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.size()];
-            Integer[][] primeras_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.size()][2];
+            int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.length];
+            Integer[][] primeras_preguntas_y_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.length][2];
 
             for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) {
-                for (int i = 0; i < posibles_estudiantes_copiados.size(); i++) {
-                    if (e.getRespuesta(pregunta) == -1 && posibles_estudiantes_copiados.get(i).getRespuesta(pregunta) != -1){
-                        cantidad_de_respuestas_faltantes[i] += 1;
-
-                        if(cantidad_de_respuestas_faltantes[i] == 1){
-                            primeras_respuestas_faltantes[i][0] = pregunta;
-                            primeras_respuestas_faltantes[i][1] = posibles_estudiantes_copiados.get(i).getRespuesta(pregunta);
-                        }
-                    }   
-                }
+                sumar_pregunta_faltante(pregunta, e, posibles_estudiantes_copiados, cantidad_de_respuestas_faltantes, primeras_preguntas_y_respuestas_faltantes);
             }
-        
-            boolean todos_cero = true;
-            for (int cantidad : cantidad_de_respuestas_faltantes){
-                if (cantidad > 0){
-                    todos_cero = false;
-                }
-            }
-            if (!todos_cero){
-        
             
-                int res_idx = 0;
-                for (int i = 1; i < posibles_estudiantes_copiados.size(); i++){
-                    if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
-                        res_idx = i;                
-                    }
-                }
+            
+            boolean hay_respuesta = hay_alguna_respuesta_faltante(cantidad_de_respuestas_faltantes);
+            
+            if (hay_respuesta){
 
-                return primeras_respuestas_faltantes[res_idx];
+                int res_idx = indice_del_estudiante_con_mas_respuestas_faltantes(cantidad_de_respuestas_faltantes);
+                return primeras_preguntas_y_respuestas_faltantes[res_idx];
             }
         }
         return null;
     }
-    
+
     private Estudiante get_estudiante_aula(int fila, int columna) {
         // Chequeamos que no sea invalido
         if (fila < 0 || fila >= _ladoAula || columna < 0 || columna >= _ladoAula) {
@@ -152,29 +171,31 @@ public class Edr {
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
         Estudiante e = h.getElement();
         
-        ArrayList<Estudiante> posibles_estudiantes_copiados = new ArrayList<Estudiante>();
+        Estudiante[] posibles_estudiantes_copiados = new Estudiante[3];
         
         if (hay_estudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
             Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() + 2);
-            posibles_estudiantes_copiados.add(ec);
+            posibles_estudiantes_copiados[0] = ec;
         }
 
         if (hay_estudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
             Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() - 2);
-            posibles_estudiantes_copiados.add(ec);
+            posibles_estudiantes_copiados[1] = ec;
         }
 
         if (hay_estudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
             Estudiante ec = get_estudiante_aula(e.getFila() - 1, e.getColumna());
-            posibles_estudiantes_copiados.add(ec);
+            posibles_estudiantes_copiados[2] = ec;
         }
 
         Integer[] pregunta_y_respuesta = obtener_respuesta_de_otro_estudiante(e, posibles_estudiantes_copiados);
         
         if (pregunta_y_respuesta != null) {
+
             if (_solucionCanonica[pregunta_y_respuesta[0]] == pregunta_y_respuesta[1]) {
                 e.setCorrectas(e.getCorrectas() + 1);
             }
+            
             e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
             e.setPuntaje(calcular_puntaje(e.getCorrectas()));
             h.setElemento(e);
