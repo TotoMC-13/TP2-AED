@@ -346,67 +346,102 @@ public class Edr {
 
     public int[] chequearCopias() {
 
-        int maxOpcion = -1;
-        for (int i = 0; i < _estudiantes.size(); i++) {
-            Estudiante e = _estudiantes.get(i).getElement();
+        // Establece cual es la maxima opcion de respuesta posible
+        int maxOpcion = calcularMaxValorRespuesta();
 
-            for (int rta : e.getExamen()) {
-                if (rta > maxOpcion) maxOpcion = rta;
-            }
-        }
-        int cantOpciones = (maxOpcion == -1) ? 1 : maxOpcion + 1; 
+        // Hacemos una matriz con columnas = preguntas y filas = respuesta
+        // En cada lugar va la cantidad de personas que contestaron esa opcion en esa pregunta
+        int[][] conteoRespuestas = generarFrecuenciasa(maxOpcion);
 
-        int[][] conteoRespuestas = new int[_solucionCanonica.length][cantOpciones];
-        
-        for (int i = 0; i < _estudiantes.size(); i++) {
-            Estudiante e = _estudiantes.get(i).getElement();
-
-            
-            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
-                int rta = e.getRespuesta(preg);
-                if (rta != -1) {
-                    conteoRespuestas[preg][rta]++;
-                }
-            }
-        }
-
+        // Definimos el umbral para definir si es sospechoso o no
         double umbral = (double)(cant_estudiantes() - 1) * 0.25;
         ArrayList<Integer> copiones = new ArrayList<>();
 
+        // Recorremos los estudiantes
         for (int id = 0; id < _estudiantes.size(); id++) {
+            // Agarramos el handle del array de handles por su id
             MinHeap<Estudiante>.Handle h = _estudiantes.get(id);
             Estudiante e = h.getElement();
 
-            
-            boolean esSosp = true;      
-            boolean respondioAlgo = false; 
-            
-            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
-                int rta = e.getRespuesta(preg);
-                if (rta != -1) { 
-                    respondioAlgo = true;
-                    int coincidenciasExternas = conteoRespuestas[preg][rta] - 1; 
-
-                    if (coincidenciasExternas < umbral || umbral == 0) {
-                        esSosp = false; 
-                        break;
-                    }
-                }
-            }
-            
-            if (esSosp && respondioAlgo) {
+            // Si es sospechoso, lo agegamos a la lista de copiones y lo seteamos en su atributo
+            if (esSospechoso(e, conteoRespuestas, umbral)) {
                 copiones.add(id);
-                e.setEsSospechoso(true);
+                e.setSospechoso(true);
             } else {
                 e.setEsSospechoso(false);
             }
-            // h.setElemento(e); Como esSospechoso no cambia el orden, podemos no actualizar el heap
         }
-        
+
+        // Lo pasamos a un array normal para devolver los copiones        
         int[] resultado = new int[copiones.size()];
         for(int i=0; i < copiones.size(); i++) {
             resultado[i] = copiones.get(i);
         }
+
         return resultado;
+    }
+
+    // Busca la maxima opcion de respuesta posible
+    private int calcularMaxValorRespuesta() {
+        int max = -1;
+
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            Estudiante e = _estudiantes.get(i).getElement();
+            
+            for (int rta: e.getExamen()) {
+                if (rta > max) {
+                    max = rta;
+                }
+            }
+        }
+
+        return max;
+    }
+
+    // Genera la matriz con las frecuencias de cada respuesta
+    private int[][] generarFrecuencias(int cantOpciones) {
+        int[][] frecuencias = new int[_solucionCanonica.length][cantOpciones];
+
+        // Recorro los estudiantes
+        for (int i = 0; i < _estudiantes.size(); i++) {
+            Estudiante e = _estudiantes.get(i).getElement();
+
+            // Recorro las respuestas del estudiante
+            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+                int rta = e.getRespuesta(preg);
+
+                // Si esta respondida, sumo uno a esa respuesta a la pregunta en la matriz
+                if (rta != -1) {
+                    frecuencias[preg][rta]++;
+                }
+            }
+        }
+
+        return frecuencias;
+    }
+
+    private boolean esSospechoso(Estudiante e, int[][] frecuencias, double umbral) {
+        boolean respondioAlgo = false;
+
+        // Recoremos todas las preguntas para ver las respuestas
+        for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+            int rta = e.getRespuesta(preg);
+
+            // Verificamos si tiene respondida esta pregunta
+            if (rta != -1) {
+                respondioAlgo = true;
+
+                // Restamos 1 para no contar la respuesta del estudiante actual
+                int coincidenciasExternas = frecuencias[preg][rta] - 1;
+
+                // Chequeamos si esta dentro del umbral, si no lo esta se libra de ser sospechoso
+                if (coincidenciasExternas < umbral || umbral == 0) {
+                    return false;
+                }
+            }
+        }
+
+        // Es sospechoso si respondio algo y todas sus respuestas estan dentro del umbral
+        return respondioAlgo;
     }
 }
