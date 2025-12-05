@@ -351,7 +351,7 @@ public class Edr {
 
         // Hacemos una matriz con columnas = preguntas y filas = respuesta
         // En cada lugar va la cantidad de personas que contestaron esa opcion en esa pregunta
-        // Sumamos 1 para no salirnos del indice
+        // Sumamos 1 para no salirnos del indice, si el maximo valor es 3 queremos una longitud para 4 respuestas (0,1,2,3)
         int[][] conteoRespuestas = generarFrecuencias(maxOpcion + 1);
 
         // Definimos el umbral para definir si es sospechoso o no
