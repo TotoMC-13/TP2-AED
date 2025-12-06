@@ -130,12 +130,18 @@ public class MinHeap<T extends Comparable> {
 		if (elementos.size() == 0) {
 			return null;
 		}
-
+		
 		Handle res = elementos.get(0);
 		Handle h2 = elementos.get(elementos.size() - 1);
 		intercambiar_handles(res, h2);
 		elementos.remove(elementos.size() - 1);
-		ordenar_handle(h2);
+
+
+		// Check para evitar hacer cagadas si esta vacio
+		// No pasaba nada por como esta hecho bajar() pero mejor agregarlo
+		if (!elementos.isEmpty()) {
+			ordenar_handle(h2);
+		}
 
 		res.adentro_heap = false;
 		return res;
