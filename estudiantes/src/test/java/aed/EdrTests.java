@@ -667,6 +667,34 @@ class EdrTests {
         
     }
 
+
+    @Test
+    void no_copiar_estudiante_que_entrego(){
+        edr.resolver(0, 3, 3);
+        edr.resolver(0, 2, 2);
+        edr.resolver(0, 0, 0);
+        edr.resolver(2, 0, 6);
+
+        edr.entregar(0);
+        edr.copiarse(1);
+
+        Estudiante e = edr._estudiantes.get(1).getElement();
+        int[] solucion_esperada = new int[]{6,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+        assertTrue(Arrays.equals(solucion_esperada, e.getExamen()));
+        
+    }
+
+
+    @Test
+    void no_copia_a_nadie(){
+        edr.copiarse(0);
+
+        Estudiante e = edr._estudiantes.get(0).getElement();
+        int[] solucion_esperada = new int[]{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+        assertTrue(Arrays.equals(solucion_esperada, e.getExamen()));
+        
+    }
+
     @Test
     void un_estudiante(){
         d_aula = 1;

@@ -24,14 +24,13 @@ public class Edr {
         int estudiantesPorFila = (_ladoAula + 1) / 2;
 
         for (int i = 0; i < Cant_estudiantes; i++) { // O(E)
-            int id = i + 1;
 
             // Calculamos la posicion con su id
             // Capaz es mas facil ver esto en una tabla si no se entiende: https://imagebin.ca/v/93Urkwzo9cI0
             int fila = i / estudiantesPorFila;
             int col = (i % estudiantesPorFila) * 2;
 
-            Estudiante e = new Estudiante(_solucionCanonica.length, id, fila, col, false, false);
+            Estudiante e = new Estudiante(_solucionCanonica.length, i, fila, col, false, false);
             tempEstudiantes[i] = e;
             
             // Esto es para despues poder usar set
@@ -47,7 +46,7 @@ public class Edr {
         // Asignamos cada handle en su lugar correspondiente
         for (MinHeap<Estudiante>.Handle h : handles) { // O(E)
             int id = h.getElement().getId();
-            _estudiantes.set(id - 1, h);
+            _estudiantes.set(id, h);
         }
 
         // Final: O(E * R)
@@ -194,17 +193,23 @@ public class Edr {
         
         if (hayEstudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
             Estudiante ec = getEstudianteAula(e.getFila(), e.getColumna() + 2);
-            posiblesEstudiantesCopiados[0] = ec;
+            if(!ec.getYaEntrego()){
+                posiblesEstudiantesCopiados[0] = ec;
+            }
         }
 
         if (hayEstudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
             Estudiante ec = getEstudianteAula(e.getFila(), e.getColumna() - 2);
-            posiblesEstudiantesCopiados[1] = ec;
+            if(!ec.getYaEntrego()){
+                posiblesEstudiantesCopiados[1] = ec;
+            }
         }
 
         if (hayEstudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
             Estudiante ec = getEstudianteAula(e.getFila() - 1, e.getColumna());
-            posiblesEstudiantesCopiados[2] = ec;
+            if(!ec.getYaEntrego()){
+                posiblesEstudiantesCopiados[2] = ec;
+            }
         }
 
         return posiblesEstudiantesCopiados;
@@ -250,9 +255,6 @@ public class Edr {
         
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
         Estudiante e = _estudiantes.get(estudiante).getElement();
-
-        // Si ya entrego no hace nada
-        if (e.getYaEntrego()) return;
 
         int respuestaAnterior = e.getRespuesta(NroEjercicio);
         
@@ -329,7 +331,7 @@ public class Edr {
 
         for (Estudiante e : estudiantesParaReinsertar) { // O(k * log E)
             MinHeap<Estudiante>.Handle nuevoHandle = _puntajes.push(e);
-            _estudiantes.set(e.getId() - 1, nuevoHandle);
+            _estudiantes.set(e.getId(), nuevoHandle);
         }
 
         // Final: O(k * (R + log E))
@@ -343,7 +345,6 @@ public class Edr {
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
 
         Estudiante e = h.getElement();
-        if (e.getYaEntrego()) return;
 
         e.setYaEntrego(true);
         // Actualizo el Heap 
