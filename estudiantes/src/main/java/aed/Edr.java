@@ -75,7 +75,7 @@ public class Edr {
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
-    private void sumar_pregunta_faltante(int pregunta, Estudiante e, Estudiante[] posibles_estudiantes_copiados, int[] cantidad_de_respuestas_faltantes,Integer[][] primeras_preguntas_y_respuestas_faltantes){
+    private void sumarPreguntaFaltante(int pregunta, Estudiante e, Estudiante[] posibles_estudiantes_copiados, int[] cantidad_de_respuestas_faltantes,Integer[][] primeras_preguntas_y_respuestas_faltantes){
         for (int i = 0; i < posibles_estudiantes_copiados.length; i++) {
 
             Estudiante posible_estudiante_copiado = posibles_estudiantes_copiados[i];
@@ -90,7 +90,7 @@ public class Edr {
         }
     }
     
-    private boolean hay_alguna_respuesta_faltante(int[] cantidad_de_respuestas_faltantes){
+    private boolean hayAlgunaRespuestaFaltante(int[] cantidad_de_respuestas_faltantes){
        
         for (int cantidad : cantidad_de_respuestas_faltantes){
             if (cantidad > 0){
@@ -101,7 +101,7 @@ public class Edr {
         return false;
     }
 
-    private int indice_del_estudiante_con_mas_respuestas_faltantes(int[] cantidad_de_respuestas_faltantes){
+    private int indiceDelEstudianteConMasRespuestasFaltantes(int[] cantidad_de_respuestas_faltantes){
         int res_idx = 0;
 
         for (int i = 1; i < cantidad_de_respuestas_faltantes.length; i++){
@@ -113,7 +113,7 @@ public class Edr {
         return res_idx;
     }
 
-    private Integer[] obtener_respuesta_de_otro_estudiante(Estudiante e, Estudiante[] posibles_estudiantes_copiados) {
+    private Integer[] obtenerRespuestaDeOtroEstudiante(Estudiante e, Estudiante[] posibles_estudiantes_copiados) {
         
         if (posibles_estudiantes_copiados.length > 0) {
          
@@ -121,22 +121,22 @@ public class Edr {
             Integer[][] primeras_preguntas_y_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.length][2];
 
             for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) {
-                sumar_pregunta_faltante(pregunta, e, posibles_estudiantes_copiados, cantidad_de_respuestas_faltantes, primeras_preguntas_y_respuestas_faltantes);
+                sumarPreguntaFaltante(pregunta, e, posibles_estudiantes_copiados, cantidad_de_respuestas_faltantes, primeras_preguntas_y_respuestas_faltantes);
             }
             
             
-            boolean hay_respuesta = hay_alguna_respuesta_faltante(cantidad_de_respuestas_faltantes);
+            boolean hay_respuesta = hayAlgunaRespuestaFaltante(cantidad_de_respuestas_faltantes);
             
             if (hay_respuesta){
 
-                int res_idx = indice_del_estudiante_con_mas_respuestas_faltantes(cantidad_de_respuestas_faltantes);
+                int res_idx = indiceDelEstudianteConMasRespuestasFaltantes(cantidad_de_respuestas_faltantes);
                 return primeras_preguntas_y_respuestas_faltantes[res_idx];
             }
         }
         return null;
     }
 
-    private Estudiante get_estudiante_aula(int fila, int columna) {
+    private Estudiante getEstudianteAula(int fila, int columna) {
         // Chequeamos que no sea invalido
         if (fila < 0 || fila >= _ladoAula || columna < 0 || columna >= _ladoAula) {
             return null;
@@ -159,8 +159,29 @@ public class Edr {
         return _estudiantes.get(indice).getElement();
     }
 
-    private boolean hay_estudiante(int fila, int columna) {
-        return get_estudiante_aula(fila, columna) != null;
+    private boolean hayEstudiante(int fila, int columna) {
+        return getEstudianteAula(fila, columna) != null;
+    }
+
+    private  Estudiante[] obtenerVecinos(Estudiante e) {
+        Estudiante[] posiblesEstudiantesCopiados = new Estudiante[3];
+        
+        if (hayEstudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
+            Estudiante ec = getEstudianteAula(e.getFila(), e.getColumna() + 2);
+            posiblesEstudiantesCopiados[0] = ec;
+        }
+
+        if (hayEstudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
+            Estudiante ec = getEstudianteAula(e.getFila(), e.getColumna() - 2);
+            posiblesEstudiantesCopiados[1] = ec;
+        }
+
+        if (hayEstudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
+            Estudiante ec = getEstudianteAula(e.getFila() - 1, e.getColumna());
+            posiblesEstudiantesCopiados[2] = ec;
+        }
+
+        return posiblesEstudiantesCopiados;
     }
      
     public void copiarse(int estudiante) {
@@ -171,24 +192,9 @@ public class Edr {
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
         Estudiante e = h.getElement();
         
-        Estudiante[] posibles_estudiantes_copiados = new Estudiante[3];
-        
-        if (hay_estudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
-            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() + 2);
-            posibles_estudiantes_copiados[0] = ec;
-        }
+        Estudiante[] posibles_estudiantes_copiados = obtenerVecinos(e);
 
-        if (hay_estudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
-            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() - 2);
-            posibles_estudiantes_copiados[1] = ec;
-        }
-
-        if (hay_estudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
-            Estudiante ec = get_estudiante_aula(e.getFila() - 1, e.getColumna());
-            posibles_estudiantes_copiados[2] = ec;
-        }
-
-        Integer[] pregunta_y_respuesta = obtener_respuesta_de_otro_estudiante(e, posibles_estudiantes_copiados);
+        Integer[] pregunta_y_respuesta = obtenerRespuestaDeOtroEstudiante(e, posibles_estudiantes_copiados);
         
         if (pregunta_y_respuesta != null) {
 
@@ -199,8 +205,7 @@ public class Edr {
             e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
             e.setPuntaje(calcular_puntaje(e.getCorrectas()));
             h.setElemento(e);
-        }
-            
+        }   
         
     }   
 
