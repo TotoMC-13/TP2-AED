@@ -74,33 +74,69 @@ public class Edr {
     }
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
-     
-    public void copiarse(int estudiante) {
-        // El/la estudiante se copia del vecino que mas respuestas
-        // completadas tenga que el/ella no tenga; se copia solamente la
-        // primera de esas respuestas. Desempata por id menor.
-        // O(R + log E)
 
-        // Obtenemos el handle del estudiante y el estudiante
-        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
-        Estudiante e = h.getElement();
+    private void sumar_pregunta_faltante(int pregunta, Estudiante e, Estudiante[] posibles_estudiantes_copiados, int[] cantidad_de_respuestas_faltantes,Integer[][] primeras_preguntas_y_respuestas_faltantes){
+        for (int i = 0; i < posibles_estudiantes_copiados.length; i++) {
 
-        // Buscamos los vecinos
-        ArrayList<Estudiante> vecinos = obtenerVecinos(e);
+            Estudiante posible_estudiante_copiado = posibles_estudiantes_copiados[i];
+            if (e.getRespuesta(pregunta) == -1 && posible_estudiante_copiado != null && posible_estudiante_copiado.getRespuesta(pregunta) != -1){
+                cantidad_de_respuestas_faltantes[i] += 1;
 
-        // Obtenemos el mejor vecino para copiarse
-        Estudiante mejorVecino = buscarMejorVecino(e, vecinos);
-
-        // Si no es null, nos copiamos
-        if (mejorVecino != null) {
-            copiarRespuesta(e, mejorVecino);
-
-            h.setElemento(e);
+                if(cantidad_de_respuestas_faltantes[i] == 1){
+                    primeras_preguntas_y_respuestas_faltantes[i][0] = pregunta;
+                    primeras_preguntas_y_respuestas_faltantes[i][1] = posible_estudiante_copiado.getRespuesta(pregunta);
+                }
+            }   
+        }
+    }
+    
+    private boolean hay_alguna_respuesta_faltante(int[] cantidad_de_respuestas_faltantes){
+       
+        for (int cantidad : cantidad_de_respuestas_faltantes){
+            if (cantidad > 0){
+                return true;
+            }
         }
 
+        return false;
     }
 
-    private Estudiante getEstudianteAula(int fila, int columna) {
+    private int indice_del_estudiante_con_mas_respuestas_faltantes(int[] cantidad_de_respuestas_faltantes){
+        int res_idx = 0;
+
+        for (int i = 1; i < cantidad_de_respuestas_faltantes.length; i++){
+            if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
+                res_idx = i;                
+            }
+        }
+
+        return res_idx;
+    }
+
+    private Integer[] obtener_respuesta_de_otro_estudiante(Estudiante e, Estudiante[] posibles_estudiantes_copiados) {
+        
+        if (posibles_estudiantes_copiados.length > 0) {
+         
+            int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.length];
+            Integer[][] primeras_preguntas_y_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.length][2];
+
+            for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) {
+                sumar_pregunta_faltante(pregunta, e, posibles_estudiantes_copiados, cantidad_de_respuestas_faltantes, primeras_preguntas_y_respuestas_faltantes);
+            }
+            
+            
+            boolean hay_respuesta = hay_alguna_respuesta_faltante(cantidad_de_respuestas_faltantes);
+            
+            if (hay_respuesta){
+
+                int res_idx = indice_del_estudiante_con_mas_respuestas_faltantes(cantidad_de_respuestas_faltantes);
+                return primeras_preguntas_y_respuestas_faltantes[res_idx];
+            }
+        }
+        return null;
+    }
+
+    private Estudiante get_estudiante_aula(int fila, int columna) {
         // Chequeamos que no sea invalido
         if (fila < 0 || fila >= _ladoAula || columna < 0 || columna >= _ladoAula) {
             return null;
@@ -122,94 +158,51 @@ public class Edr {
 
         return _estudiantes.get(indice).getElement();
     }
+
+    private boolean hay_estudiante(int fila, int columna) {
+        return get_estudiante_aula(fila, columna) != null;
+    }
+     
+    public void copiarse(int estudiante) {
+        // El/la estudiante se copia del vecino que mas respuestas
+        // completadas tenga que el/ella no tenga; se copia solamente la
+        // primera de esas respuestas. Desempata por id menor.
+        // O(R + log E)
+        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
+        Estudiante e = h.getElement();
         
-    private ArrayList<Estudiante> obtenerVecinos(Estudiante e) {
-        // La funcion es bastante sencilla, hacemos una lista vacia y chequeamos
-        // las 3 posibles posiciones, por la forma en la que estan ordenados se puede
-        // hacer con 3 cuentas faciles
-        ArrayList<Estudiante> vecinos = new ArrayList<>();
-
-        // Derecha
-        Estudiante derecha = getEstudianteAula(e.getFila(), e.getColumna() + 2);
-        if (derecha != null) {
-            vecinos.add(derecha);
+        Estudiante[] posibles_estudiantes_copiados = new Estudiante[3];
+        
+        if (hay_estudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
+            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() + 2);
+            posibles_estudiantes_copiados[0] = ec;
         }
 
-        // Izquierda
-        Estudiante izquierda = getEstudianteAula(e.getFila(), e.getColumna() - 2);
-        if (izquierda != null) {
-            vecinos.add(izquierda);
+        if (hay_estudiante(e.getFila(), e.getColumna() - 2)) { //miro a la izquierda
+            Estudiante ec = get_estudiante_aula(e.getFila(), e.getColumna() - 2);
+            posibles_estudiantes_copiados[1] = ec;
         }
 
-        // Adelate
-        Estudiante adelante = getEstudianteAula(e.getFila() - 1, e.getColumna());
-        if (adelante != null) {
-            vecinos.add(adelante);
+        if (hay_estudiante(e.getFila() - 1, e.getColumna())) { //miro adelante
+            Estudiante ec = get_estudiante_aula(e.getFila() - 1, e.getColumna());
+            posibles_estudiantes_copiados[2] = ec;
         }
 
-        return vecinos;
-    }
+        Integer[] pregunta_y_respuesta = obtener_respuesta_de_otro_estudiante(e, posibles_estudiantes_copiados);
+        
+        if (pregunta_y_respuesta != null) {
 
-    private Estudiante buscarMejorVecino(Estudiante e, ArrayList<Estudiante> vecinos) {
-        // El mejor vecino seria el que mas respuestas utiles tiene, es decir
-        // respuestas que no haya respondido e pero si el vecino
-        Estudiante mejorVecino = null;
-        int maxRespuestasUtiles = 0;
-
-        // Para cada vecino, contamos las respuestas utiles, el que mas tenga
-        // sera el mejor vecino para copiarse
-        for (Estudiante vecino: vecinos) {
-            int utiles = contarRespuestasUtiles(e, vecino);
-
-            if (utiles > 0) {
-                if (utiles > maxRespuestasUtiles) {
-                    maxRespuestasUtiles = utiles;
-                    mejorVecino = vecino;
-                } else if (utiles == maxRespuestasUtiles) {
-                    if (mejorVecino == null || vecino.getId() < mejorVecino.getId()) {
-                        mejorVecino = vecino;
-                    }
-                } 
+            if (_solucionCanonica[pregunta_y_respuesta[0]] == pregunta_y_respuesta[1]) {
+                e.setCorrectas(e.getCorrectas() + 1);
             }
+            
+            e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
+            e.setPuntaje(calcular_puntaje(e.getCorrectas()));
+            h.setElemento(e);
         }
-
-        return mejorVecino;
-    }
-
-    private int contarRespuestasUtiles(Estudiante e, Estudiante vecino) {
-        // Funcion que cuenta las respuestas que no respondimos y el vecino si
-        int respuestasUtiles = 0;
-
-        for (int i = 0; i < _solucionCanonica.length; i++) {
-            if (e.getRespuesta(i) == -1 && vecino.getRespuesta(i) != -1) {
-                respuestasUtiles++;
-            }
-        }
-
-        return respuestasUtiles;
-    }
-
-    private void copiarRespuesta(Estudiante e, Estudiante vecino) {
-        // Buscamos la primera respuesta que nos sirva del vecino y
-        // la copiamos
-
-        for (int i = 0; i < _solucionCanonica.length; i++) {
-            if (e.getRespuesta(i) == -1 && vecino.getRespuesta(i) != -1) {
-                int respuestaCopiada = vecino.getRespuesta(i);
-
-                if (respuestaCopiada == _solucionCanonica[i]) {
-                    // Si es correcta la copiada, actualizamos el atributo correctas del estudiante
-                    e.setCorrectas(e.getCorrectas() + 1);
-                }
-
-                // Seteamos la respuesta copiada y el nuevo puntaje tras copiarnos
-                e.setExamen(i, respuestaCopiada);
-                e.setPuntaje(calcular_puntaje(e.getCorrectas()));
-
-                return;
-            }
-        }
-    }
+            
+        
+    }   
 
 
 //-----------------------------------------------RESOLVER----------------------------------------------------------------
