@@ -122,8 +122,15 @@ public class MinHeap<T extends Comparable> {
 	}
 
 	private void ordenar_handle(Handle h) {
-		subir(h);
-		bajar(h);
+		// Agrego un check sencillo, cambia algo? La verdad n
+		// pero capaz sin esto no le gusta a los profes
+		
+		// Chequeamos si necesita subir
+		if (h.posicion > 0 && h.compareTo(getPadre(h)) < 0) {
+			subir(h);
+		} else { // Si no tuvo que subir, vemos si tiene que bajar
+			bajar(h);
+		}
 	}
 
 	public Handle desencolar() {

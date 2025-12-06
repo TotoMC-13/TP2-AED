@@ -13,7 +13,7 @@ public class Edr {
       
         _ladoAula = LadoAula;
         _estudiantes = new ArrayList<MinHeap<Estudiante>.Handle>();
-        _solucionCanonica = ExamenCanonico.clone();
+        _solucionCanonica = ExamenCanonico.clone(); // O(R)
         _puntajes = new MinHeap<Estudiante>();
         
         // Creamos un array temporal para los estudiantes
@@ -23,7 +23,7 @@ public class Edr {
         // Ej: LadoAula = 4, se sientan en 0 y 2
         int estudiantesPorFila = (_ladoAula + 1) / 2;
 
-        for (int i = 0; i < Cant_estudiantes; i++) {
+        for (int i = 0; i < Cant_estudiantes; i++) { // O(E)
             int id = i + 1;
 
             // Calculamos la posicion con su id
@@ -35,28 +35,29 @@ public class Edr {
             tempEstudiantes[i] = e;
             
             // Esto es para despues poder usar set
-            _estudiantes.add(null);
+            _estudiantes.add(null); // O(1)
         }
 
         // Armamos el heap en O(E) con Heapify (esta en nuestro constructor)
-        _puntajes = new MinHeap<>(tempEstudiantes);
+        _puntajes = new MinHeap<>(tempEstudiantes); // O(E)
 
         // Recuperamos las handles y las asignamos
         ArrayList<MinHeap<Estudiante>.Handle> handles = _puntajes.getHandles();
 
         // Asignamos cada handle en su lugar correspondiente
-        for (MinHeap<Estudiante>.Handle h : handles) {
+        for (MinHeap<Estudiante>.Handle h : handles) { // O(E)
             int id = h.getElement().getId();
             _estudiantes.set(id - 1, h);
         }
 
+        // Final: O(E * R)
     }
 
     private int cant_estudiantes(){
-        return _estudiantes.size();
+        return _estudiantes.size(); // O(1)
     }
     private double calcular_puntaje(int correctas) {
-        return Math.floor((double)correctas * 100.0 / _solucionCanonica.length);
+        return Math.floor((double)correctas * 100.0 / _solucionCanonica.length); // O(1)
     }
 
 //-------------------------------------------------NOTAS--------------------------------------------------------------------------
@@ -66,74 +67,93 @@ public class Edr {
         // O(E)
         double[] res = new double[_estudiantes.size()];
 
-        for (int i = 0; i < _estudiantes.size(); i++) {
-            res[i] = _estudiantes.get(i).getElement().getPuntaje();
+        for (int i = 0; i < _estudiantes.size(); i++) { // O(E)
+            res[i] = _estudiantes.get(i).getElement().getPuntaje(); // O(1)
         }
 
         return res;
+
+        // Final: O(E)
     }
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
     private void sumarPreguntaFaltante(int pregunta, Estudiante e, Estudiante[] posibles_estudiantes_copiados, int[] cantidad_de_respuestas_faltantes,Integer[][] primeras_preguntas_y_respuestas_faltantes){
-        for (int i = 0; i < posibles_estudiantes_copiados.length; i++) {
+        for (int i = 0; i < posibles_estudiantes_copiados.length; i++) { // O(1) pues siempre son 3 vecinos como maximo
 
             Estudiante posible_estudiante_copiado = posibles_estudiantes_copiados[i];
+
+            // Si no tenemos la pregunta y el vecino si
             if (e.getRespuesta(pregunta) == -1 && posible_estudiante_copiado != null && posible_estudiante_copiado.getRespuesta(pregunta) != -1){
                 cantidad_de_respuestas_faltantes[i] += 1;
-
+                
+                // Si no la habiamos encontrado antes, la guardamos
                 if(cantidad_de_respuestas_faltantes[i] == 1){
                     primeras_preguntas_y_respuestas_faltantes[i][0] = pregunta;
                     primeras_preguntas_y_respuestas_faltantes[i][1] = posible_estudiante_copiado.getRespuesta(pregunta);
                 }
             }   
         }
+
+        // Final: O(1)
     }
     
     private boolean hayAlgunaRespuestaFaltante(int[] cantidad_de_respuestas_faltantes){
-       
-        for (int cantidad : cantidad_de_respuestas_faltantes){
+       // Chequea si algun vecino tiene algo util para copiarnos
+        for (int cantidad : cantidad_de_respuestas_faltantes){ // O(1) pues siempre son 3 vecinos como maximo
             if (cantidad > 0){
                 return true;
             }
         }
 
         return false;
+
+        // Final: O(1)
     }
 
     private int indiceDelEstudianteConMasRespuestasFaltantes(int[] cantidad_de_respuestas_faltantes){
         int res_idx = 0;
 
-        for (int i = 1; i < cantidad_de_respuestas_faltantes.length; i++){
+        // Busca entre los vecinos cual tiene mas respuestas que nos falten
+        for (int i = 1; i < cantidad_de_respuestas_faltantes.length; i++){ // O(1) pues siempre son 3 vecinos como maximo
             if (cantidad_de_respuestas_faltantes[res_idx] < cantidad_de_respuestas_faltantes[i]){
                 res_idx = i;                
             }
         }
 
         return res_idx;
+
+        // Final: O(1)
     }
 
     private Integer[] obtenerRespuestaDeOtroEstudiante(Estudiante e, Estudiante[] posibles_estudiantes_copiados) {
         
+        // Chequeamos si nos podemos copiar de alguien
         if (posibles_estudiantes_copiados.length > 0) {
-         
+            
             int[] cantidad_de_respuestas_faltantes = new int[posibles_estudiantes_copiados.length];
             Integer[][] primeras_preguntas_y_respuestas_faltantes = new Integer[posibles_estudiantes_copiados.length][2];
-
-            for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) {
+            
+            // Recorremos todas las preguntas del examen para ver cuales nos faltan
+            for (int pregunta = 0; pregunta < e.getExamen().length; pregunta++) { // O(R)
                 sumarPreguntaFaltante(pregunta, e, posibles_estudiantes_copiados, cantidad_de_respuestas_faltantes, primeras_preguntas_y_respuestas_faltantes);
             }
             
-            
+            // Vemos si hay alguna respuesta faltante
             boolean hay_respuesta = hayAlgunaRespuestaFaltante(cantidad_de_respuestas_faltantes);
             
+            // Si hay una respuesta util, llamamos a indiceDelEstudianteConMasRespuestasFaltantes para
+            // obtener el indice del vecino del cual nos vamos a copiar
             if (hay_respuesta){
 
                 int res_idx = indiceDelEstudianteConMasRespuestasFaltantes(cantidad_de_respuestas_faltantes);
                 return primeras_preguntas_y_respuestas_faltantes[res_idx];
             }
         }
+
         return null;
+
+        // Final: O(R)
     }
 
     private Estudiante getEstudianteAula(int fila, int columna) {
@@ -157,13 +177,19 @@ public class Edr {
         }
 
         return _estudiantes.get(indice).getElement();
+
+        // Final: O(1), son solo calculos matematicos
     }
 
     private boolean hayEstudiante(int fila, int columna) {
         return getEstudianteAula(fila, columna) != null;
+
+        // Final: O(1)
     }
 
     private  Estudiante[] obtenerVecinos(Estudiante e) {
+        // Como es facil ubicar a los vecinos, los buscamos directamente con unas cuentas
+        // para ver cuales estan para poder copiarnos
         Estudiante[] posiblesEstudiantesCopiados = new Estudiante[3];
         
         if (hayEstudiante(e.getFila(), e.getColumna() + 2)) { //miro a la derecha
@@ -182,6 +208,8 @@ public class Edr {
         }
 
         return posiblesEstudiantesCopiados;
+
+        // Final: O(1) pues son 3 cuentas simples
     }
      
     public void copiarse(int estudiante) {
@@ -189,24 +217,25 @@ public class Edr {
         // completadas tenga que el/ella no tenga; se copia solamente la
         // primera de esas respuestas. Desempata por id menor.
         // O(R + log E)
-        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
-        Estudiante e = h.getElement();
+        MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante); // O(1)
+        Estudiante e = h.getElement(); // O(1)
         
-        Estudiante[] posibles_estudiantes_copiados = obtenerVecinos(e);
+        Estudiante[] posibles_estudiantes_copiados = obtenerVecinos(e); // O(1)
 
-        Integer[] pregunta_y_respuesta = obtenerRespuestaDeOtroEstudiante(e, posibles_estudiantes_copiados);
+        Integer[] pregunta_y_respuesta = obtenerRespuestaDeOtroEstudiante(e, posibles_estudiantes_copiados); // O(R)
         
         if (pregunta_y_respuesta != null) {
 
             if (_solucionCanonica[pregunta_y_respuesta[0]] == pregunta_y_respuesta[1]) {
-                e.setCorrectas(e.getCorrectas() + 1);
+                e.setCorrectas(e.getCorrectas() + 1); // O(1)
             }
             
-            e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]);
-            e.setPuntaje(calcular_puntaje(e.getCorrectas()));
-            h.setElemento(e);
+            e.setExamen(pregunta_y_respuesta[0], pregunta_y_respuesta[1]); // O(1)
+            e.setPuntaje(calcular_puntaje(e.getCorrectas())); // O(1)
+            h.setElemento(e); // O(log E)
         }   
         
+        // Final: O(R + log E)
     }   
 
 
@@ -251,6 +280,8 @@ public class Edr {
 
         // Aca actualizo el Heap, en O(log E)
         h.setElemento(e); 
+
+        // Final: O(log E)
     }
 
 
@@ -273,16 +304,17 @@ public class Edr {
         while (kProcesados < n && !_puntajes.estaVacio()) {
             // Al sacar del heap, obtenemos el menor.
             // Como los que entregaron tienen _yaEntrego=true, son mayores así que están al fondo
-            MinHeap<Estudiante>.Handle h = _puntajes.desencolar();
+            MinHeap<Estudiante>.Handle h = _puntajes.desencolar(); // O(log E)
 
             Estudiante e = h.getElement();
             
-            for (int j = 0; j < _solucionCanonica.length; j++) {
+            for (int j = 0; j < _solucionCanonica.length; j++) { // O(R)
                 e.setExamen(j, examenDW[j]);
             }
             
             int correctas = 0;
-            for (int j = 0; j < _solucionCanonica.length; j++) {
+            
+            for (int j = 0; j < _solucionCanonica.length; j++) { // O(R)
                 if (e.getRespuesta(j) == _solucionCanonica[j]) {
                     correctas++;
                 }
@@ -295,10 +327,12 @@ public class Edr {
             kProcesados++;
         }
 
-        for (Estudiante e : estudiantesParaReinsertar) {
+        for (Estudiante e : estudiantesParaReinsertar) { // O(k * log E)
             MinHeap<Estudiante>.Handle nuevoHandle = _puntajes.push(e);
             _estudiantes.set(e.getId() - 1, nuevoHandle);
         }
+
+        // Final: O(k * (R + log E))
     }
 
  
@@ -315,7 +349,9 @@ public class Edr {
         // Actualizo el Heap 
         // Como ahora e._yaEntrego es true, el compareTo lo va a considerar mayory lo va a mandar al fondo 
         // No modificamos su puntaje, así notas() sigue funcionando.
-        h.setElemento(e);
+        h.setElemento(e); // O(log E)
+
+        // Final: O(log E)
     }
 
    
@@ -326,12 +362,12 @@ public class Edr {
         MinHeap<NotaFinal> heapNotas = new MinHeap<>();
         int cantidadAprobados = 0;
 
-        for (int i = 0; i < _estudiantes.size(); i++) {
+        for (int i = 0; i < _estudiantes.size(); i++) { // O(E)
             Estudiante e = _estudiantes.get(i).getElement();
 
             // Si entrego y NO es sospechoso, lo metemos en el heap
             if (!e.getEsSospechoso()) {
-                heapNotas.push(new NotaFinal(e.getPuntaje(), i));
+                heapNotas.push(new NotaFinal(e.getPuntaje(), i)); // O(log E)
                 cantidadAprobados++;
             }
         }
@@ -340,11 +376,13 @@ public class Edr {
         NotaFinal[] resultado = new NotaFinal[cantidadAprobados];
 
         // Los insertamos en el orden correcto
-        for (int i = cantidadAprobados-1; i >=0 ; i--) {
-            resultado[i] = heapNotas.desencolar().getElement();
+        for (int i = cantidadAprobados-1; i >=0 ; i--) { // O(E)
+            resultado[i] = heapNotas.desencolar().getElement(); // O(log E)
         }
 
         return resultado;
+
+        // Final: O(E log E)
     }
 
 //-------------------------------------------------------CHEQUEAR COPIAS-------------------------------------------------
@@ -352,19 +390,19 @@ public class Edr {
     public int[] chequearCopias() {
 
         // Establece cual es la maxima opcion de respuesta posible
-        int maxOpcion = calcularMaxValorRespuesta();
+        int maxOpcion = calcularMaxValorRespuesta(); // O(E * R)
 
         // Hacemos una matriz con columnas = preguntas y filas = respuesta
         // En cada lugar va la cantidad de personas que contestaron esa opcion en esa pregunta
         // Sumamos 1 para no salirnos del indice, si el maximo valor es 3 queremos una longitud para 4 respuestas (0,1,2,3)
-        int[][] conteoRespuestas = generarFrecuencias(maxOpcion + 1);
+        int[][] conteoRespuestas = generarFrecuencias(maxOpcion + 1); // O(E * R)
 
         // Definimos el umbral para definir si es sospechoso o no
         double umbral = (double)(cant_estudiantes() - 1) * 0.25;
         ArrayList<Integer> copiones = new ArrayList<>();
 
         // Recorremos los estudiantes
-        for (int id = 0; id < _estudiantes.size(); id++) {
+        for (int id = 0; id < _estudiantes.size(); id++) { // O(E)
             // Agarramos el handle del array de handles por su id
             MinHeap<Estudiante>.Handle h = _estudiantes.get(id);
             Estudiante e = h.getElement();
@@ -380,21 +418,23 @@ public class Edr {
 
         // Lo pasamos a un array normal para devolver los copiones        
         int[] resultado = new int[copiones.size()];
-        for(int i=0; i < copiones.size(); i++) {
+        for(int i=0; i < copiones.size(); i++) { // O(E) si todos son copiones
             resultado[i] = copiones.get(i);
         }
 
         return resultado;
+
+        // Final: O(E * R)
     }
 
     // Busca la maxima opcion de respuesta posible
     private int calcularMaxValorRespuesta() {
         int max = -1;
 
-        for (int i = 0; i < _estudiantes.size(); i++) {
+        for (int i = 0; i < _estudiantes.size(); i++) { // O(E)
             Estudiante e = _estudiantes.get(i).getElement();
             
-            for (int rta: e.getExamen()) {
+            for (int rta: e.getExamen()) { // O(R)
                 if (rta > max) {
                     max = rta;
                 }
@@ -402,6 +442,8 @@ public class Edr {
         }
 
         return max;
+
+        // Final: O(E * R)
     }
 
     // Genera la matriz con las frecuencias de cada respuesta
@@ -409,11 +451,11 @@ public class Edr {
         int[][] frecuencias = new int[_solucionCanonica.length][cantOpciones];
 
         // Recorro los estudiantes
-        for (int i = 0; i < _estudiantes.size(); i++) {
+        for (int i = 0; i < _estudiantes.size(); i++) { // O(E)
             Estudiante e = _estudiantes.get(i).getElement();
 
             // Recorro las respuestas del estudiante
-            for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+            for (int preg = 0; preg < _solucionCanonica.length; preg++) { // O(R)
                 int rta = e.getRespuesta(preg);
 
                 // Si esta respondida, sumo uno a esa respuesta a la pregunta en la matriz
@@ -424,13 +466,15 @@ public class Edr {
         }
 
         return frecuencias;
+
+        // Final: O(E * R)
     }
 
     private boolean esSospechoso(Estudiante e, int[][] frecuencias, double umbral) {
         boolean respondioAlgo = false;
 
         // Recoremos todas las preguntas para ver las respuestas
-        for (int preg = 0; preg < _solucionCanonica.length; preg++) {
+        for (int preg = 0; preg < _solucionCanonica.length; preg++) { // O(R)
             int rta = e.getRespuesta(preg);
 
             // Verificamos si tiene respondida esta pregunta
@@ -449,5 +493,7 @@ public class Edr {
 
         // Es sospechoso si respondio algo y todas sus respuestas estan dentro del umbral
         return respondioAlgo;
+
+        // Final: O(R) 
     }
 }
