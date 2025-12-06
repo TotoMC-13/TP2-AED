@@ -56,7 +56,7 @@ public class MinHeap<T extends Comparable> {
 			this.posicion = posicion;
 		}
 
-		public void setElemento(T elemento) { // AUXIOIo cambiar erstudiante desde el heap (?
+		public void setElemento(T elemento) {
 			this.elemento = elemento;
 
 			if (adentro_heap) {
