@@ -709,5 +709,20 @@ class EdrTests {
 
     }
 
-   
+    @Test
+    void corregir_todos_sospechosos_devuelve_vacio() {
+        for (int i = 0; i < cant_alumnos; i++) {
+            for (int j = 0; j < solucion.length; j++) {
+                edr.resolver(i, j, 5);
+            }
+            edr.entregar(i);
+        }
+        
+        int[] copiones = edr.chequearCopias();
+        assertEquals(cant_alumnos, copiones.length);
+        
+        NotaFinal[] resultado = edr.corregir();
+        assertEquals(0, resultado.length);
+    }
+
 }
