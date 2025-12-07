@@ -220,7 +220,7 @@ public class Edr {
     public void copiarse(int estudiante) {
         // El/la estudiante se copia del vecino que mas respuestas
         // completadas tenga que el/ella no tenga; se copia solamente la
-        // primera de esas respuestas. Desempata por id menor.
+        // primera de esas respuestas. Desempata por id mayor.
         // O(R + log E)
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante); // O(1)
         Estudiante e = h.getElement(); // O(1)
