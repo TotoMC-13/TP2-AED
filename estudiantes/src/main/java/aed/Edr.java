@@ -48,7 +48,6 @@ public class Edr {
             int id = h.getElement().getId();
             _estudiantes.set(id, h);
         }
-
         // Final: O(E * R)
     }
 
@@ -223,7 +222,7 @@ public class Edr {
         // primera de esas respuestas. Desempata por id mayor.
         // O(R + log E)
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante); // O(1)
-        Estudiante e = h.getElement(); // O(1)
+        Estudiante e = h.getElement().clone(); // O(1)
         
         Estudiante[] posibles_estudiantes_copiados = obtenerVecinos(e); // O(1)
 
@@ -254,7 +253,7 @@ public class Edr {
         // O(log E)
         
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
-        Estudiante e = _estudiantes.get(estudiante).getElement();
+        Estudiante e = h.getElement().clone(); // O(1)
 
         int respuestaAnterior = e.getRespuesta(NroEjercicio);
         
@@ -281,6 +280,7 @@ public class Edr {
         e.setPuntaje(nuevoPuntaje);
 
         // Aca actualizo el Heap, en O(log E)
+        
         h.setElemento(e); 
 
         // Final: O(log E)
@@ -344,7 +344,7 @@ public class Edr {
     public void entregar(int estudiante) {
         MinHeap<Estudiante>.Handle h = _estudiantes.get(estudiante);
 
-        Estudiante e = h.getElement();
+        Estudiante e = h.getElement().clone(); //O(1)
 
         e.setYaEntrego(true);
         // Actualizo el Heap 

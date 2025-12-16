@@ -29,6 +29,20 @@ public class Estudiante implements Comparable<Estudiante>{
 
     }
 
+    public Estudiante(Estudiante e) {
+        _examen = e._examen;
+        _id = e._id;
+        _puntaje = e._puntaje;
+        _fila = e._fila;
+        _columna = e._columna;
+        _esSospechoso = e._esSospechoso;
+        _yaEntrego = e._yaEntrego;
+    }
+
+
+    public Estudiante clone() {
+        return new Estudiante(this);
+    }
     
     @Override
     public int compareTo(Estudiante est) {
@@ -49,7 +63,6 @@ public class Estudiante implements Comparable<Estudiante>{
     }
     
     // Getters
-    
     public int getRespuesta(int pregunta) {
         return _examen[pregunta]; 
     }
